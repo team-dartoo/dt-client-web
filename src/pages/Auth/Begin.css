@@ -1,0 +1,49 @@
+.btn.login {
+  min-width: 250px;
+  width: 76vw;
+  height: 49px;
+  padding: 11px 18px;
+  gap: 12px;
+  border-radius: 20px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px 0 var(--gray2, #e1e8f0);
+  display: flex;
+}
+
+/* .begin {
+  padding: 12vh 0px;
+} */
+
+.kakao {
+  background-color: #ffe812;
+}
+
+.google {
+  background-color: #ffffff;
+}
+
+.signup {
+  box-shadow: none !important;
+}
+
+.begin .btn-wrapper {
+  display: flex;
+  padding: 20px 50px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+}
+
+.begin .title-wrapper {
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.begin .title-wrapper img {
+  width: 87%;
+  height: auto;
+  object-fit: contain;
+}

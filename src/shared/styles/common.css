@@ -1,0 +1,257 @@
+@import "./normalize.css";
+@import "./reset.css";
+
+/* common.css */
+
+/** Variants **/
+:root {
+  --default-fz: 0.875rem;
+  /* Primary Colors */
+  --mainBlue: #3c6eaf;
+  --mainBlueLight: #f2f8ff;
+  --mainBluePale: #accdf9;
+  --mainBluePoint: #5292e7;
+  --mainBlueDark: #26599a;
+
+  /* Secondary Colors */
+  --subBlue: #48beeb;
+  --subBlueLight: #d7f1fa;
+  --subBluePale: #addfee;
+  --subBlueDark: #005b7c;
+
+  /* Text */
+  --mainText: #080d17;
+  --subText: #777a7e;
+
+  /* Grays */
+  --gray1: #f5f8fb;
+  --gray2: #e1e8f0;
+  --gray3: #c5d0de;
+  --gray4: #96a8be;
+  --gray5: #5e7593;
+
+  /* Others */
+  --success: #47c468;
+  --alert: #f43838;
+}
+
+/* layout */
+* {
+  box-sizing: border-box;
+}
+
+/** typography **/
+
+body {
+  height: 100%;
+  font-family: "Pretendard Variable";
+  color: var(--mainText);
+  font-size: var(--default-fz);
+  letter-spacing: -0.28px;
+  line-height: normal;
+}
+header,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 700;
+}
+
+.text-xs {
+  font-size: calc(var(--default-fz) * 0.8571); /* 12px */
+}
+
+.text-sm {
+  font-size: calc(var(--default-fz) * 1); /* 14px */
+}
+
+.text-base {
+  font-size: calc(var(--default-fz) * 1.1429); /* 16px */
+}
+
+.text-lg {
+  font-size: calc(var(--default-fz) * 1.2857); /* 18px */
+}
+
+.text-xl {
+  font-size: calc(var(--default-fz) * 1.4286); /* 20px */
+}
+
+.text-2xl {
+  font-size: calc(var(--default-fz) * 1.7857); /* 25px */
+}
+
+/** color **/
+/* 추가 및 수정 가능*/
+
+.white {
+  color: white;
+}
+
+.primary {
+  color: var(--mainBlue);
+}
+
+.primary-bg {
+  background: var(--mainBlue);
+}
+
+.primary-light-bg {
+  background: var(--mainBlueLight);
+}
+
+.primary-point {
+  color: var(--mainBluePoint);
+}
+
+.primary-point-bg {
+  background: var(--mainBluePoint);
+}
+
+.primary-dark {
+  color: var(--mainBlueDark);
+}
+
+.primary-dark-bg {
+  background: var(--mainBlueDark);
+}
+
+.gray1 {
+  color: var(--gray1);
+}
+.gray1-bg {
+  background: var(--gray1);
+}
+
+.gray2 {
+  color: var(--gray2);
+}
+.gray2-bg {
+  background: var(--gray2);
+}
+
+.gray3 {
+  color: var(--gray3);
+}
+.gray3-bg {
+  background: var(--gray3);
+}
+
+.gray4 {
+  color: var(--gray4);
+}
+.gray4-bg {
+  background: var(--gray4);
+}
+
+.gray5 {
+  color: var(--gray5);
+}
+.gray5-bg {
+  background: var(--gray5);
+}
+
+/* link */
+
+.link {
+  font-size: calc(var(--default-fz) * 1.1429); /* 16px */
+}
+
+.underline {
+  text-decoration: underline;
+}
+
+/* form */
+.field label {
+  font-size: calc(var(--default-fz) * 1.1429); /* 16px */
+  font-weight: 700;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.field p {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  height: 50px;
+
+  border: 1px solid var(--gray3);
+  border-radius: 10px;
+}
+
+.field p input {
+  flex: 1;
+  height: 100%;
+  /* 타이핑 할때 글씨*/
+  color: var(--mainText);
+  font-size: var(--default-fz);
+  outline: none;
+}
+
+.field p input::placeholder {
+  color: var(--gray3);
+}
+
+/* p태그 요소 안에 포커스가 걸렸을 때 p의 스타일 */
+
+.field p:focus-within {
+  border: 2px solid var(--mainBluePoint);
+  /* border-color: var(--mainBlue); */
+  /* box-shadow: 0 2px 8px 0 var(--gray2); */
+}
+
+/* Button */
+
+/* button */
+
+.btn {
+  width: 80vw;
+  height: 54px;
+  flex-shrink: 0;
+  border-radius: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--default-fz) * 1.1429); /* 16px */
+  font-weight: 800;
+  gap: 20px;
+}
+
+.sm-btn {
+  display: flex;
+  height: 36px;
+  padding: 8px 14px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 18px;
+  background-color: var(--mainBlueLight);
+}
+
+.sm-btn.primary-point-bg {
+  background-color: var(--mainBluePoint);
+  color: white;
+}
+
+.full {
+  width: 100%;
+}
+
+.invisible {
+  visibility: hidden;
+}
+
+.header {
+  display: flex;
+  width: 100vw;
+  height: 54px;
+  padding: 12px 26px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 121px;
+}

@@ -1,0 +1,33 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 54px; /* 7vh */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 26px 12px;
+  font-size: calc(var(--default-fz) * 1.4286);
+  background-color: white;
+  /* border-bottom: 1px solid #eee; */
+}
+
+.header.transparent {
+  background-color: transparent;
+}
+
+.header-title {
+  flex: 1;
+  text-align: center;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.header-left,
+.header-right {
+  width: 40px; /* 버튼 영역 크기 통일 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
