@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../../shared/components/Header";
 import arrowLeft from "@/images/arrow-left.svg";
 import chevronRight from "@/images/chevron-right.svg";
-import "./Agree.css";
+import "./agree.css";
 
 const Agree = () => {
   const navigate = useNavigate();

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import beginTitle from "@/images/begin_title.png";
 import kakao from "@/images/kakao_icon.svg";
 import google from "@/images/google_icon.svg";
-import "./Begin.css";
+import "./begin.css";
 
 const Begin = () => {
   return (
