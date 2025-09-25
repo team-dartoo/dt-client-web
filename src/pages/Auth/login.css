@@ -1,0 +1,15 @@
+.login {
+  position: relative;
+  height: 100vh;
+  padding-top: 54px;
+}
+
+.login-form {
+  margin: 75px 10vw 0 10vw;
+}
+
+.login-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 29px;
+}

@@ -1,7 +1,13 @@
+.agree {
+  position: relative;
+  height: 100vh;
+  padding-top: 54px;
+}
+
 .agree .title-wrapper {
   display: flex;
   flex-direction: column;
-  padding: 15vh 0 0 14vw;
+  padding: 15vh 0 0 12vw;
   gap: 11px;
 }
 
@@ -10,7 +16,7 @@
 }
 
 .agree .title {
-  font-size: calc(var(--default-fz) * 2.1875); /* 35px */
+  font-size: calc(var(--default-fz) * 2.5); /* 35px */
   letter-spacing: -0.7px;
 }
 
@@ -28,14 +34,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 316px;
+  width: 80%;
   height: 46px;
   flex-shrink: 0;
   border-radius: 10px;
   background: var(--mainBlueLight);
 }
 
-.checkbox-content {
+.agree .checkbox-content {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -61,7 +67,7 @@
 
 .agree-all {
     display: flex;
-    width: 316px;
+    width: 80%;
     padding-left: 5px;
     padding-top: 6px;
 

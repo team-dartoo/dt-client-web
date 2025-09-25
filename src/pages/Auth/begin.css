@@ -1,7 +1,13 @@
-.btn.login {
+.begin {
+  position: relative;
+  height: 100vh;
+  padding-top: 54px;
+}
+
+.btn.loginBtn {
   min-width: 250px;
   width: 76vw;
-  height: 49px;
+  height: calc(76vw * 0.17);
   padding: 11px 18px;
   gap: 12px;
   border-radius: 20px;
@@ -22,7 +28,7 @@
   background-color: #ffffff;
 }
 
-.signup {
+.signupBtn {
   box-shadow: none !important;
 }
 

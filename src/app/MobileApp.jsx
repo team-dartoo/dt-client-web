@@ -44,7 +44,7 @@ const MobileApp = () => {
   };
 
   const pageTransition = {
-    duration: 0.15,
+    duration: 0.1,
     ease: "easeInOut",
   };
 

@@ -13,20 +13,23 @@ const Begin = () => {
       </div>
 
       <div className="btn-wrapper">
-        <Link className="btn login primary-bg white" to="/login">
+        <Link className="btn loginBtn primary-bg white" to="/login">
           이메일 로그인
         </Link>
-        <Link className="btn login kakao" to="*">
+        <Link className="btn loginBtn kakao" to="*">
           <img src={kakao} alt="kakao_icon" />
           카카오 로그인
           <img className="invisible" src={kakao} alt="kakao_icon" />
         </Link>
-        <Link className="btn login google" to="*">
+        <Link className="btn loginBtn google" to="*">
           <img src={google} alt="kakao_icon" />
           구글 로그인
           <img className="invisible" src={google} alt="kakao_icon" />
         </Link>
-        <Link className="btn login signup primary-dark" to="/signup/agree">
+        <Link
+          className="btn loginBtn signupBtn primary-dark"
+          to="/signup/agree"
+        >
           회원가입
         </Link>
       </div>

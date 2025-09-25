@@ -9,16 +9,13 @@ import "./agree.css";
 const Agree = () => {
   const navigate = useNavigate();
 
-  // 각 항목의 동의 여부
   const [agreements, setAgreements] = useState({
     term1: false, // 기본 이용약관
     term2: false, // 개인정보 수집
   });
 
-  // 모두 동의 여부
   const allChecked = agreements.term1 && agreements.term2;
 
-  // 개별 항목 토글
   const toggleAgreement = (key) => {
     setAgreements((prev) => ({
       ...prev,
@@ -26,14 +23,18 @@ const Agree = () => {
     }));
   };
 
-  // 모두 동의 토글
   const toggleAll = () => {
     if (allChecked) {
       setAgreements({ term1: false, term2: false });
     } else {
-      // 모두 동의
       setAgreements({ term1: true, term2: true });
     }
+  };
+
+  // '다음' 버튼 클릭 시 동작. 서버에 동의 여부 전송
+  const handleNext = () => {
+    if (!allChecked) return;
+    navigate("/signup/form");
   };
 
   return (
@@ -50,7 +51,9 @@ const Agree = () => {
       <div className="title-wrapper">
         <h2 className="name text-xl primary-dark">DARTOO(다투)</h2>
         <h1 className="title">
-          서비스 이용 약관에<br></br>동의해주세요.
+          서비스 이용 약관에
+          <br />
+          동의해주세요.
         </h1>
       </div>
 
@@ -74,7 +77,7 @@ const Agree = () => {
                 />
               </svg>
             </button>
-            <p className="text-sm">(필수) 다투 기본 이용약관</p>
+            <p className="text-base">(필수) 다투 기본 이용약관</p>
           </div>
 
           <button className="detail">
@@ -101,7 +104,7 @@ const Agree = () => {
                 />
               </svg>
             </button>
-            <p className="text-sm">(필수) 개인정보 수집 및 이용</p>
+            <p className="text-base">(필수) 개인정보 수집 및 이용</p>
           </div>
 
           <button className="detail">
@@ -124,9 +127,17 @@ const Agree = () => {
               />
             </svg>
           </button>
-          <p className="text-sm">모두 동의</p>
+          <p className="text-base">모두 동의</p>
         </div>
       </div>
+
+      <button
+        className={`btn bottom white ${allChecked ? "primary-bg" : "gray3-bg"}`}
+        disabled={!allChecked}
+        onClick={handleNext}
+      >
+        다음
+      </button>
     </div>
   );
 };
