@@ -1,13 +1,14 @@
 .begin {
   position: relative;
-  height: 100vh;
-  padding-top: 54px;
+  height: 100dvh;
+  padding-top: 10vh;
 }
 
 .btn.loginBtn {
   min-width: 250px;
   width: 76vw;
   height: calc(76vw * 0.17);
+  max-height: 49px;
   padding: 11px 18px;
   gap: 12px;
   border-radius: 20px;
@@ -42,7 +43,7 @@
 }
 
 .begin .title-wrapper {
-  width: 100vw;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;

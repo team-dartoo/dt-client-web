@@ -1,128 +1,115 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import NavBar from "../../shared/components/Navbar";
+import Header from "../../shared/components/Header";
+import SearchBar from "../../shared/components/SearchBar";
+import chatIcon from "@/images/chat_icon.svg";
+import crownIcon from "@/images/crown_icon.svg";
+import dartooLogo from "@/images/DARTOO.svg";
+import title from "@/images/dartoo_name.svg";
+
+import MyCompanySection from "./component/MyCompanySection.jsx";
+
+import "./main.css";
 
 const Main = () => {
+  const navigate = useNavigate();
+
+  const [recommendations, setRecommendations] = useState([]);
+
+  // 검색어 입력될 때마다 호출
+  const handleSearchChange = (value) => {
+    console.log("검색어:", value);
+
+    // // 예시: 간단한 추천 키워드 로직
+    // if (value.length > 0) {
+    //   setRecommendations([value + " 뉴스", value + " 주가", value + " 공시"]);
+    // } else {
+    //   setRecommendations([]);
+    // }
+  };
+
+  // 더미 공시 데이터 (나중에 서버에서 받아올 예정)
+  const [disclosures, setDisclosures] = useState([
+    {
+      id: 1,
+      company: "삼성전자",
+      title: "2025년 1분기 실적 공시",
+      date: "2025-10-31",
+    },
+    {
+      id: 2,
+      company: "LG에너지솔루션",
+      title: "전지 생산 관련 신규 설비 투자 결정",
+      date: "2025-10-30",
+    },
+    {
+      id: 3,
+      company: "카카오",
+      title: "자회사 카카오모빌리티 흡수합병 결정",
+      date: "2025-10-30",
+    },
+    {
+      id: 4,
+      company: "현대자동차",
+      title: "전기차 배터리 공동개발 협약 체결",
+      date: "2025-10-29",
+    },
+  ]);
+  const dummyCompanies = [
+    "삼성전자",
+    "카카오",
+    "sk하이닉스",
+    "네이버",
+    "포스코",
+    "현대차",
+  ];
+
+  const latestDisclosures = disclosures.slice(0, 3);
+
   return (
-    <div className="main">
-      <div style={{ padding: "20px" }}>
-        <h2>테스트용 네비게이션</h2>
-        <ul style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          {/* 시작 화면 */}
-          <li>
-            <Link to="/">Splash (시작화면)</Link>
-          </li>
+    <div className="main page">
+      <NavBar />
+      <Header
+        title={<img src={dartooLogo} alt="dartoo" />}
+        right={
+          <button onClick={() => navigate(-1)}>
+            <img src={chatIcon} alt="AI-chat" />
+          </button>
+        }
+      />
+      <SearchBar
+        onChange={handleSearchChange}
+        placeholder="기업명을 검색하세요"
+      />
 
-          {/* 회원 관련 */}
-          <li>
-            <Link to="/signup/agree">회원가입 - 동의</Link>
-          </li>
-          <li>
-            <Link to="/signup/form">회원가입 - 입력</Link>
-          </li>
-          <li>
-            <Link to="/login">로그인 - 입력</Link>
-          </li>
+      {/* 프리미엄 */}
 
-          {/* 홈 화면 */}
-          <li>
-            <Link to="/main">*홈화면 (Main)</Link>
-          </li>
-          <li>
-            <Link to="/main/search">홈화면 - 검색</Link>
-          </li>
-          <li>
-            <Link to="/main/search/list">검색 결과 리스트</Link>
-          </li>
-
-          {/* 북마크 */}
-          <li>
-            <Link to="/bookmark">*기업 북마크</Link>
-          </li>
-
-          {/* 챗봇 */}
-          <li>
-            <Link to="/chatbot">챗봇 페이지</Link>
-          </li>
-
-          {/* 알림 */}
-          <li>
-            <Link to="/notification">*알림함</Link>
-          </li>
-          <li>
-            <Link to="/notification/setting">알림함 - 설정</Link>
-          </li>
-
-          {/* 내 정보 */}
-          <li>
-            <Link to="/profile">*내 정보</Link>
-          </li>
-          <li>
-            <Link to="/profile/detail">내 정보 - 상세</Link>
-          </li>
-          <li>
-            <Link to="/profile/notice">내 정보 - 공지사항</Link>
-          </li>
-          <li>
-            <Link to="/profile/premium">내 정보 - 프리미엄 구독 유도</Link>
-          </li>
-
-          {/* 기업 상세 */}
-          <li>
-            <Link to="/company/1">기업 상세 설명 (예: id=1)</Link>
-          </li>
-        </ul>
+      <div className="premium-ad">
+        <img src={crownIcon} alt="crown" />
+        프리미엄 버전 사용해보기
       </div>
 
-      <h2>Typography</h2>
-      <h3 className="text-2xl">logo</h3>
-      <h3 className="text-xl">page-title</h3>
-      <h3 className="text-lg">section-title</h3>
-      <h3 className="text-base">page-sub-title</h3>
-      <h3 className="text-sm">content-title</h3>
-      <h3 className="text-xs">medium-desc</h3>
+      {/* 오늘의 공시 */}
 
-      <h2>Colors</h2>
-      <div className="primary"> primary color</div>
-      <h2>Link</h2>
-      <Link className="link primary" to="*">
-        home
-      </Link>
-      <Link className="underline" to="*">
-        home
-      </Link>
-
-      <Link className="btn primary-bg" to="*">
-        home
-      </Link>
-      <Link className="btn" to="*">
-        home
-      </Link>
-
-      <h2>Form</h2>
-
-      <form action="">
-        <div className="field">
-          <label htmlFor="userName">닉네임</label>
-          <p>
-            <input
-              type="text"
-              id="userName"
-              placeholder="닉네임을 입력하세요"
-            />
-          </p>
+      <div className="today-section">
+        <div className="today-title text-xl">오늘의 공시</div>
+        <div className="today-list">
+          {latestDisclosures.map((item) => (
+            <div key={item.id} className="today-item">
+              {/* 추후 클릭 처리 필요 */}
+              <p className="text-base">
+                <span className="border">[{item.company}]</span> {item.title}
+              </p>
+            </div>
+          ))}
         </div>
-      </form>
+      </div>
 
-      <h2>Button</h2>
+      {/* 내가 찜한 기업 */}
 
-      <input type="submit" className="btn full primary-bg" value="가입하기" />
-
-      <button className="sm-btn primary-light-bg">삼성전자</button>
-      <button className="sm-btn primary-point-bg">전체</button>
-
-      <Link className="btn login primary-bg" to="*">
-        로그인
-      </Link>
+      <MyCompanySection companies={dummyCompanies} />
     </div>
   );
 };

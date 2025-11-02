@@ -1,0 +1,72 @@
+.my-company-section {
+  margin: 20px 13px;
+  gap: 10px;
+}
+
+.my-company-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.my-company-title {
+  margin: 20px 17px;
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+}
+
+.toggle-btn {
+  margin-left: auto;
+  background: none;
+  border: 0;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.my-company-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  transition: max-height 0.3s ease;
+}
+
+.my-company-list.collapsed {
+  flex-wrap: nowrap; /* 한 줄만 */
+  overflow-x: auto; /* 가로 스크롤 */
+  overflow-y: hidden;
+  white-space: nowrap;
+  padding-bottom: 6px; /* 스크롤바와 살짝 간격 */
+  scrollbar-width: none; /* Firefox: 스크롤바 숨기기 */
+}
+.my-company-list.collapsed::-webkit-scrollbar {
+  display: none; /* Chrome: 스크롤바 숨기기 */
+}
+
+/* 펼침 상태: 여러 줄 보이게 */
+.my-company-list.expanded {
+  flex-wrap: wrap;
+  overflow: visible;
+  max-height: none;
+}
+
+/* 칩 스타일 */
+.chip {
+  border: 0;
+  padding: 13px 15px;
+  border-radius: 9999px;
+  background: var(--mainBlueLight);
+  color: var(--mainText);
+  font-weight: 600;
+  font-size: calc(var(--default-fz) * 1.1429); /* 16px */
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* 선택된 칩 (스크린샷 느낌) */
+.chip.active {
+  background: var(--mainBluePoint);
+  color: #fff;
+}

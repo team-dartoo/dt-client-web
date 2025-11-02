@@ -1,0 +1,59 @@
+.Navbar {
+  position: fixed;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  background-color: var(--mainBlue);
+  height: 8vh;
+  min-height: 60px;
+  max-height: 70px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  overflow: hidden;
+}
+
+.nav-item {
+  flex: 1;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+  position: relative;
+}
+
+.nav-item.active {
+  background: var(--mainBluePoint);
+}
+
+.nav-item > img {
+  height: auto; /* 비율 유지 */
+  object-fit: contain; /* 잘리지 않게 비율 유지 */
+  max-height: 80%; /* 부모 높이 초과 방지 */
+}
+
+/* 알림 아이콘 래퍼 (dot 위치 기준) */
+.icon-wrap {
+  position: relative;
+  /* display: inline-grid; */
+  place-items: center;
+  max-height: 80%;
+  height: auto; /* 비율 유지 */
+  object-fit: contain; /* 잘리지 않게 비율 유지 */
+  max-height: 80%; /* 부모 높이 초과 방지 */
+}
+
+/* 빨간 점 (숫자 없이 점만) */
+.dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background: #ff3b30;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--mainBlue); /* 아이콘 주위 경계 선 느낌 */
+}

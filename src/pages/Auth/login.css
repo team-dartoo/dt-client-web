@@ -1,7 +1,7 @@
 .login {
   position: relative;
-  height: 100vh;
-  padding-top: 54px;
+  height: 100dvh;
+  padding-top: 10vh;
 }
 
 .login-form {

@@ -5,9 +5,16 @@ import PcApp from "./PcApp";
 import "./../shared/styles/common.css";
 
 import { ToastProvider } from "../contexts/ToastContext";
+import { NotificationProvider } from "../contexts/NotificationContext";
 
 export default function App() {
   const isMobile = useIsMobile();
 
-  return <ToastProvider>{isMobile ? <MobileApp /> : <PcApp />}</ToastProvider>;
+  return (
+    <ToastProvider>
+      <NotificationProvider>
+        {isMobile ? <MobileApp /> : <PcApp />}
+      </NotificationProvider>
+    </ToastProvider>
+  );
 }

@@ -3,15 +3,15 @@
   top: 0;
   left: 0;
   width: 100vw;
-  height: 10vh;
-  max-height: 80px;
+  height: 15vh;
+  max-height: 70px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 26px 12px;
+  padding: 26px 24px;
   font-size: calc(var(--default-fz) * 1.4286);
   background-color: white;
-  /* border-bottom: 1px solid #eee; */
+  border-bottom: 1px solid #eee;
 }
 
 .header.transparent {
@@ -19,10 +19,13 @@
 }
 
 .header-title {
-  flex: 1;
-  text-align: center;
-  font-weight: 700;
   white-space: nowrap;
+  font-size: calc(var(--default-fz) * 1.2857) !important;
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  align-items: center;
+  justify-content: center;
 }
 
 .header-left,
