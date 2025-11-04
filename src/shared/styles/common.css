@@ -32,7 +32,7 @@
 
   /* Others */
   --success: #47c468;
-  --alert: #f43838;
+  --alert: #e73636;
 }
 
 /* layout */
@@ -83,11 +83,19 @@ h6 {
 }
 
 .text-2xl {
+  font-size: calc(var(--default-fz) * 1.5714); /* 22px */
+}
+
+.text-3xl {
   font-size: calc(var(--default-fz) * 1.7857); /* 25px */
 }
 
 .border {
   font-weight: 600;
+}
+
+.border2 {
+  font-weight: 700;
 }
 
 /** color **/
@@ -169,7 +177,8 @@ h6 {
 .page {
   position: relative;
   height: 100dvh;
-  padding-top: 60px;
+  padding-top: 70px;
+  margin-bottom: 40px;
 }
 
 /* link */

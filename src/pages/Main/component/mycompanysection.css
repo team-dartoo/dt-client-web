@@ -27,22 +27,23 @@
 }
 
 .my-company-list {
+  margin: 10px 0;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  transition: max-height 0.3s ease;
+  border-bottom: 1px solid #eee;
 }
 
 .my-company-list.collapsed {
-  flex-wrap: nowrap; /* 한 줄만 */
-  overflow-x: auto; /* 가로 스크롤 */
+  flex-wrap: nowrap;
+  overflow-x: auto;
   overflow-y: hidden;
   white-space: nowrap;
-  padding-bottom: 6px; /* 스크롤바와 살짝 간격 */
-  scrollbar-width: none; /* Firefox: 스크롤바 숨기기 */
+  padding-bottom: 6px;
+  scrollbar-width: none;
 }
 .my-company-list.collapsed::-webkit-scrollbar {
-  display: none; /* Chrome: 스크롤바 숨기기 */
+  display: none;
 }
 
 /* 펼침 상태: 여러 줄 보이게 */
@@ -65,8 +66,7 @@
   cursor: pointer;
 }
 
-/* 선택된 칩 (스크린샷 느낌) */
 .chip.active {
   background: var(--mainBluePoint);
-  color: #fff;
+  color: white;
 }

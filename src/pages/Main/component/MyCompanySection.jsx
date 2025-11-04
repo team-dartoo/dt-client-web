@@ -3,6 +3,8 @@ import "./mycompanysection.css";
 import chevronDownIcon from "@/images/chevron_down_icon.svg";
 import chevronUpIcon from "@/images/chevron_up_icon.svg";
 
+import DisclosureCard from "../../../shared/components/DisclosureCard";
+
 /**
  * props
  * - companies: string[]           // 북마크한 기업명 목록
@@ -42,6 +44,11 @@ const MyCompanySection = ({ companies = [], defaultExpanded = false }) => {
             {name}
           </button>
         ))}
+      </div>
+
+      <div className="card-wrapper">
+        <DisclosureCard />
+        <DisclosureCard />
       </div>
     </div>
   );

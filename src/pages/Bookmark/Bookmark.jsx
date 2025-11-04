@@ -7,12 +7,12 @@ const Bookmark = () => {
     <div className="BookMark">
       <NavBar />
       <Header
-        title="DARTOO"
-        // right={
-        //   <button onClick={() => navigate(-1)}>
-        //     <img src={chatIcon} alt="AI-chat" />
-        //   </button>
-        // }
+        title={<img src={dartooLogo} alt="dartoo" />}
+        right={
+          <button onClick={() => navigate(-1)}>
+            <img src={chatIcon} alt="AI-chat" />
+          </button>
+        }
       />
     </div>
   );

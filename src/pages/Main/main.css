@@ -38,6 +38,12 @@
   border-bottom: 1px solid var(--gray2);
 }
 
+.today-item p {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .today-item:last-child {
   border-bottom: none;
 }
