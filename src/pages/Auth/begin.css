@@ -1,7 +1,6 @@
 .begin {
-  position: relative;
-  height: 100dvh;
-  padding-top: 10vh;
+  padding: 0;
+  margin: 0;
 }
 
 .btn.loginBtn {
@@ -53,4 +52,10 @@
   width: 87%;
   height: auto;
   object-fit: contain;
+}
+
+@media screen and (min-width: 768px) {
+  .begin .title-wrapper img {
+    width: 40%;
+  }
 }

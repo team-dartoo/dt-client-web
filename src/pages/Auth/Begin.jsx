@@ -7,7 +7,7 @@ import "./begin.css";
 
 const Begin = () => {
   return (
-    <div className="begin">
+    <div className="begin page">
       <div className="title-wrapper">
         <img src={beginTitle} alt="begin_title" />
       </div>

@@ -1,6 +1,7 @@
 .my-company-section {
   margin: 20px 13px;
   gap: 10px;
+  padding-bottom: 70px;
 }
 
 .my-company-header {
@@ -31,6 +32,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  padding-bottom: 6px;
   border-bottom: 1px solid #eee;
 }
 
@@ -39,7 +41,6 @@
   overflow-x: auto;
   overflow-y: hidden;
   white-space: nowrap;
-  padding-bottom: 6px;
   scrollbar-width: none;
 }
 .my-company-list.collapsed::-webkit-scrollbar {

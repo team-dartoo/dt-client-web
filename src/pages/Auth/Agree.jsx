@@ -38,7 +38,7 @@ const Agree = () => {
   };
 
   return (
-    <div className="agree">
+    <div className="agree page">
       <Header
         left={
           <button onClick={() => navigate(-1)}>

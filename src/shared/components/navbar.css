@@ -8,9 +8,7 @@
   left: 0;
   width: 100vw;
   background-color: var(--mainBlue);
-  height: 8vh;
-  min-height: 60px;
-  max-height: 70px;
+  height: 60px;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
   overflow: hidden;

@@ -27,7 +27,7 @@ const Login = () => {
   const { showToast } = useToast();
 
   return (
-    <div className="login">
+    <div className="login page">
       <Header
         left={
           <button onClick={() => navigate(-1)}>

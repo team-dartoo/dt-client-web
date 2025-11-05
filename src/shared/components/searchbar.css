@@ -1,7 +1,8 @@
-.search-bar {
+.searchBar {
   display: flex;
-  height: 10vh;
-  max-height: 55px;
+  /********************/
+  height: 50px;
+  /********************/
   padding: 10px 20px;
   margin: 10px 12px;
   align-items: center;
@@ -11,14 +12,14 @@
   border: 2px solid var(--mainBlueDark);
 }
 
-.search-bar input {
+.searchBar input {
   flex: 1;
   border: none;
   outline: none;
   font-size: calc(var(--default-fz) * 1.2857); /* 18px */
 }
 
-.search-bar input::placeholder {
+.searchBar input::placeholder {
   color: var(--gray3);
   font-size: var(--default-fz);
 }

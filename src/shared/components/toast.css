@@ -17,7 +17,6 @@
 
 .toast {
   width: 90vw;
-  max-width: 560px;
   height: calc(90vw * 0.18);
   border-radius: 4px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
@@ -64,4 +63,11 @@
 .toast-closed .toast {
   opacity: 0;
   transform: translateY(100px);
+}
+
+@media screen and (min-width: 768px) {
+  .toast {
+    width: 90vw;
+    height: 10vh;
+  }
 }

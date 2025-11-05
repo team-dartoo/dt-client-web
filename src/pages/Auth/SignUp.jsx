@@ -28,7 +28,7 @@ const SignUp = () => {
   };
 
   return (
-    <div className="signup">
+    <div className="signup page">
       <Header
         left={
           <button onClick={() => navigate(-1)}>

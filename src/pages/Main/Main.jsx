@@ -5,30 +5,16 @@ import NavBar from "../../shared/components/Navbar";
 import Header from "../../shared/components/Header";
 import SearchBar from "../../shared/components/SearchBar";
 import chatIcon from "@/images/chat_icon.svg";
-import crownIcon from "@/images/crown_icon.svg";
 import dartooLogo from "@/images/DARTOO.svg";
 import title from "@/images/dartoo_name.svg";
 
 import MyCompanySection from "./component/MyCompanySection.jsx";
+import PremiumAd from "./component/PremiumAd.jsx";
 
 import "./main.css";
 
 const Main = () => {
   const navigate = useNavigate();
-
-  const [recommendations, setRecommendations] = useState([]);
-
-  // 검색어 입력될 때마다 호출
-  const handleSearchChange = (value) => {
-    console.log("검색어:", value);
-
-    // // 예시: 간단한 추천 키워드 로직
-    // if (value.length > 0) {
-    //   setRecommendations([value + " 뉴스", value + " 주가", value + " 공시"]);
-    // } else {
-    //   setRecommendations([]);
-    // }
-  };
 
   // 더미 공시 데이터 (나중에 서버에서 받아올 예정)
   const [disclosures, setDisclosures] = useState([
@@ -65,6 +51,12 @@ const Main = () => {
     "네이버",
     "포스코",
     "현대차",
+    "삼성전자",
+    "카카오게임즈",
+    "현대오토에버",
+    "코스트코",
+    "엠비디아",
+    "로보틱스",
   ];
 
   const latestDisclosures = disclosures.slice(0, 3);
@@ -80,17 +72,11 @@ const Main = () => {
           </button>
         }
       />
-      <SearchBar
-        onChange={handleSearchChange}
-        placeholder="기업명을 검색하세요"
-      />
+      <SearchBar />
 
       {/* 프리미엄 */}
 
-      <div className="premium-ad">
-        <img src={crownIcon} alt="crown" />
-        프리미엄 버전 사용해보기
-      </div>
+      <PremiumAd />
 
       {/* 오늘의 공시 */}
 
