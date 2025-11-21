@@ -1,0 +1,67 @@
+.profile-card {
+  margin-top: 10px;
+}
+
+.profile-info {
+  margin: 0 17px;
+  display: flex;
+  border-radius: 20px;
+  background: var(--mainBlueLight);
+  padding: 44px 40px;
+  gap: 20px;
+}
+
+.profile-name {
+  text-align: center;
+  font-weight: 700;
+}
+
+.profile-sub {
+  display: flex;
+  gap: 14px;
+}
+
+.membership-link {
+  display: flex;
+  text-decoration: underline;
+  align-items: center;
+}
+
+.membership-link img {
+  width: 15px;
+  height: 15px;
+}
+
+.ad-banner {
+  display: flex;
+  height: 100px;
+  text-align: left;
+  background: #cbcbcb;
+  padding: 10px;
+  margin: 15px 0;
+}
+
+.profile-menu {
+  display: flex;
+  flex-direction: column;
+  margin: 0 15px;
+}
+
+.menu-item {
+  display: flex;
+  height: 70px;
+  padding: 10px 15px;
+  align-items: center;
+  font-size: calc(var(--default-fz) * 1.2857);
+  gap: 5px;
+  font-weight: 400;
+  flex-shrink: 0;
+  align-self: stretch;
+  border-bottom: 1px solid var(--mainBlueLight);
+}
+
+.menu-item img {
+  width: 20px;
+  height: 20px;
+  aspect-ratio: 1/1;
+}

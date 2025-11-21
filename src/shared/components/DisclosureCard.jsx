@@ -31,6 +31,14 @@ const DisclosureCard = () => {
         <div className="ai-summary-title">
           <span className="ai-title-text">🤖 AI 세줄 요약</span>
         </div>
+        {/*로딩*/}
+        {/* <div className="ai-summary-loading text-base">요약 중입니다...</div> */}
+        {/*실패*/}
+        {/* <div className="ai-summary-fail text-base">
+          요약을 불러오지 못했습니다.
+          <button className="primary-bg white">재시도</button>
+        </div> */}
+        {/*성공*/}
         <ul className="ai-summary-list text-base">
           <li className="ai-summary-item">
             • 매출 75조원으로 전년 대비 8% 증가

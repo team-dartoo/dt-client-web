@@ -7,6 +7,7 @@ import {
   useNavigationType,
 } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import ScrollToTop from "../shared/hooks/useScrollToTop";
 
 import Main from "../pages/Main/Main";
 import Splash from "../pages/Splash/Splash";
@@ -58,6 +59,7 @@ const MobileApp = () => {
 
   return (
     <div className="mobileApp" style={{ height: "100%" }}>
+      <ScrollToTop />
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/splash" element={withMotion(<Splash />)} />
@@ -83,10 +85,10 @@ const MobileApp = () => {
             }
           />
 
-          <Route
+          {/* <Route
             path="/main/search/list"
             element={withMotion(<SearchList />)}
-          />
+          /> */}
 
           <Route path="/bookmark" element={<Bookmark />} />
 

@@ -21,7 +21,6 @@
 
 .header-title {
   white-space: nowrap;
-  font-size: calc(var(--default-fz) * 1.2857) !important;
   text-align: center;
   font-weight: 800;
   letter-spacing: -0.5px;

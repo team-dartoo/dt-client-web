@@ -47,6 +47,7 @@ const Login = () => {
                 id="userName"
                 placeholder="닉네임을 입력하세요"
                 value={userName}
+                maxLength={8}
                 onChange={(e) => setUserName(e.target.value)}
               />
             </p>

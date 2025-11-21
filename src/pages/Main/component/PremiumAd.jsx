@@ -5,7 +5,7 @@ import crownIcon from "@/images/crown_icon.svg";
 
 const PremiumAd = () => {
   return (
-    <div className="PremiumAd">
+    <div className="PremiumAd gradation">
       <img src={crownIcon} alt="crown" />
       <p>프리미엄 버전 사용해보기</p>
     </div>

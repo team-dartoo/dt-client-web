@@ -5,11 +5,11 @@
   font-weight: 700;
   color: white;
   gap: 5px;
-  background: linear-gradient(
+  /* background: linear-gradient(
     90deg,
     var(--mainBluePoint, #5598f0) 0%,
     var(--subBluePale, #c2f1ff) 100%
-  );
+  ); */
 }
 
 .PremiumAd img {

@@ -1,0 +1,30 @@
+.bookmark-list {
+  display: flex;
+  margin: 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.bookmark-item {
+  padding: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 500;
+}
+
+.bookmark-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.bookmark-move-handle {
+  cursor: grab;
+  touch-action: none; /* 중요: 모바일에서 페이지 스크롤 대신 드래그 잡게 */
+}
+
+.bookmark-move-handle:active {
+  cursor: grabbing;
+}

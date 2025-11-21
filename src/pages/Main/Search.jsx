@@ -1,73 +1,88 @@
-import React, { useState } from "react";
+// pages/Main/Search.jsx
+import React, { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./search.css";
-import xIcon from "@/images/x_icon.svg";
 
 import SearchBar from "../../shared/components/SearchBar";
+import SearchHome from "./component/SearchHome";
+import SearchResult from "./component/SearchResult";
 
 const Search = () => {
-  const recentKeywords = [
-    "삼성전자",
-    "LG전자",
-    "현대자동차",
-    "NAVER",
-    "KAKAO",
-    "SK하이닉스",
-    "포스코",
-    "셀트리온",
-    "한화솔루션",
-    "기아",
-    "두산",
-    "롯데케미칼",
-    "CJ제일제당",
-    "대한항공",
-    "한국전력",
-  ];
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const [recommendations, setRecommendations] = useState([]);
+  // ✅ URL의 q = 확정된 검색어(검색 결과 기준)
+  const q = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get("q") || "";
+  }, [location.search]);
 
-  const popularChips = ["삼성전자", "sk하이닉스", "카카오"];
+  // ✅ 검색바에 보이는 값
+  const [keyword, setKeyword] = useState(q);
 
-  // 검색어 입력될 때마다 호출
+  // ✅ 포커스 상태 (포커스면 HOME)
+  const [isFocused, setIsFocused] = useState(false);
+
+  // q가 바뀔 때, 검색바에도 반영
+  useEffect(() => {
+    setKeyword(q);
+  }, [q]);
+
+  // HOME 모드 조건: 포커스 중 또는 q가 비어 있을 때
+  const isHomeMode = isFocused || !q;
+
+  // 검색바에 타이핑
   const handleSearchChange = (value) => {
-    console.log("검색어:", value);
-
-    // // 예시: 간단한 추천 키워드 로직
-    // if (value.length > 0) {
-    //   setRecommendations([value + " 뉴스", value + " 주가", value + " 공시"]);
-    // } else {
-    //   setRecommendations([]);
-    // }
+    setKeyword(value);
   };
+
+  // 검색 실행 (엔터/검색버튼)
+  const handleSearchSubmit = (valueFromBar) => {
+    const raw = valueFromBar ?? keyword;
+    const trimmed = raw.trim();
+    if (!trimmed) return;
+
+    // URL q 갱신 → 결과 모드
+    navigate(`/main/search?q=${encodeURIComponent(trimmed)}`);
+    setIsFocused(false);
+  };
+
+  // ✅ X 버튼: keyword + q 둘 다 리셋
+  const handleClear = () => {
+    setKeyword("");
+    // URL에서도 q 제거
+    navigate("/main/search");
+    // 다시 HOME 모드 + 포커스 상태
+    setIsFocused(true);
+  };
+
+  // 추천/최근 키워드 클릭
+  const handleKeywordClick = (word) => {
+    const trimmed = word.trim();
+    if (!trimmed) return;
+
+    // 검색바에 값 세팅
+    setKeyword(trimmed);
+    // URL q 갱신
+    navigate(`/main/search?q=${encodeURIComponent(trimmed)}`);
+    setIsFocused(false);
+  };
+
   return (
     <div className="Search page">
-      <SearchBar onChange={handleSearchChange} />
+      <SearchBar
+        value={keyword}
+        onChange={handleSearchChange}
+        onSubmit={handleSearchSubmit}
+        onFocusChange={setIsFocused}
+        onClear={handleClear} // 🔥 X 버튼 전용 콜백
+      />
 
-      <section className="popularKW">
-        <h1 className="popularKW-title text-xl">현재 최다검색 키워드 🔥</h1>
-        <div className="popularKW-list">
-          {popularChips.map((name) => (
-            <button
-              key={name}
-              type="button"
-              className="popularChip"
-              onClick={""}
-            >
-              {name}
-            </button>
-          ))}
-        </div>
-      </section>
-      <section className="recentKW">
-        <div className="recentKW-title">최근 기록</div>
-        <div className="recentKW-list">
-          {recentKeywords.map((kw, index) => (
-            <div key={index} className="recentKW-item">
-              <img src={xIcon} alt="delete" /> {/* 이 부분 삭제 로직 */}
-              <p className="text-lg">{kw}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {isHomeMode ? (
+        <SearchHome onKeywordClick={handleKeywordClick} />
+      ) : (
+        <SearchResult query={q} />
+      )}
     </div>
   );
 };

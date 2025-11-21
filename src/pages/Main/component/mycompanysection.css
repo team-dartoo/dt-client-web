@@ -54,19 +54,6 @@
   max-height: none;
 }
 
-/* 칩 스타일 */
-.chip {
-  border: 0;
-  padding: 13px 15px;
-  border-radius: 9999px;
-  background: var(--mainBlueLight);
-  color: var(--mainText);
-  font-weight: 600;
-  font-size: calc(var(--default-fz) * 1.1429); /* 16px */
-  white-space: nowrap;
-  cursor: pointer;
-}
-
 .chip.active {
   background: var(--mainBluePoint);
   color: white;

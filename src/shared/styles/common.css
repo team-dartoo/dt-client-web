@@ -172,12 +172,30 @@ h6 {
   background: var(--gray5);
 }
 
+.gradation {
+  background: linear-gradient(90deg, #00e3ff 0%, #4aa7ee 21.15%, #946bdc 100%);
+}
+
 /* page */
 
 .page {
   position: relative;
   height: 100vh;
   padding-top: 70px;
+}
+
+/* chip */
+
+.chip {
+  border: 0;
+  padding: 13px 15px;
+  border-radius: 9999px;
+  background: var(--mainBlueLight);
+  color: var(--mainText);
+  font-weight: 600;
+  font-size: calc(var(--default-fz) * 1.1429); /* 16px */
+  white-space: nowrap;
+  cursor: pointer;
 }
 
 /* link */
