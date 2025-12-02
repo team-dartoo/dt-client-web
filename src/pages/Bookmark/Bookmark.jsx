@@ -18,7 +18,7 @@ import {
 // useSortable : 개별 아이템을 드래그 가능한 객체로 변환
 import { CSS } from "@dnd-kit/utilities";
 
-import NavBar from "@/shared/components/NavBar";
+import NavBar from "@/shared/components/Navbar";
 import Header from "@/shared/components/Header";
 import xIcon from "@/images/x_red_icon.svg";
 import moveIcon from "@/images/move_icon.svg";
