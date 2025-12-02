@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import beginTitle from "@/images/begin_title.png";
 import kakao from "@/images/kakao_icon.svg";
 import google from "@/images/google_icon.svg";
+import naver from "@/images/naver_icon.svg";
 import "./begin.css";
 
 const Begin = () => {
@@ -16,16 +17,17 @@ const Begin = () => {
         <Link className="btn loginBtn primary-bg white" to="/login">
           이메일 로그인
         </Link>
-        <Link className="btn loginBtn kakao" to="*">
-          <img src={kakao} alt="kakao_icon" />
-          카카오 로그인
-          <img className="invisible" src={kakao} alt="kakao_icon" />
-        </Link>
-        <Link className="btn loginBtn google" to="*">
-          <img src={google} alt="kakao_icon" />
-          구글 로그인
-          <img className="invisible" src={google} alt="kakao_icon" />
-        </Link>
+        <div className="social-login-wrapper">
+          <Link className="loginBtnCircle kakao" to="*">
+            <img src={kakao} alt="kakao_icon" />
+          </Link>
+          <Link className="loginBtnCircle google" to="*">
+            <img src={google} alt="google_icon" />
+          </Link>
+          <Link className="loginBtnCircle naver" to="*">
+            <img src={naver} alt="naver_icon" />
+          </Link>
+        </div>
         <Link
           className="btn loginBtn signupBtn primary-dark"
           to="/signup/agree"

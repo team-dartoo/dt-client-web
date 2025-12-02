@@ -72,7 +72,7 @@ const SearchResult = ({ query }) => {
     setList(result);
   }, [query]);
 
-  // dtae 표시
+  // date 표시
   const RelativeTime = ({ date }) => {
     const { text, type } = useRelativeTime(date);
 

@@ -1,0 +1,71 @@
+.NotificationItem {
+  display: flex;
+  width: 100vw;
+  padding: 15px 22px;
+  gap: 15px;
+}
+
+.alert-icon {
+  margin: 2px 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.alert-icon.disclosure {
+  background-color: var(--mainBlue);
+}
+
+.alert-icon.ai {
+  background-color: var(--mainBluePoint);
+}
+
+/* .alert-left {
+  background-color: pink;
+} */
+
+.alert-right {
+  /* background-color: aqua; */
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+
+.alert-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.company-name {
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.alert-category {
+  font-weight: 500;
+}
+.alert-summary {
+  padding-left: 18px;
+  margin: 0;
+  list-style: disc; /* ← 기본 점 복원 */
+}
+
+.alert-summary li {
+  list-style: inherit; /* ← 각 li가 부모의 disc 스타일 상속 */
+  font-weight: 300;
+}
+
+.alert-content {
+  font-weight: 300;
+}
+
+.alert-date {
+  color: var(--subText);
+}
+
+.recent-time {
+  color: var(--mainBlue);
+}
