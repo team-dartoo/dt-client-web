@@ -26,7 +26,10 @@ const Profile = () => {
             <p className="profile-name text-2xl">닉네임8글자제한 님</p>
             <div className="profile-sub">
               <span className="membership-type">프리미엄 회원</span>
-              <span className="membership-link primary">
+              <span
+                className="membership-link primary"
+                onClick={() => navigate("/profile/premium")}
+              >
                 요금제 확인 <img src={chevronRightSmall} alt="chevron-right" />
               </span>
             </div>

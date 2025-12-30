@@ -31,7 +31,7 @@ const initialCompanies = [
 ];
 
 // 개별 아이템
-function SortableBookmarkItem({ company, index, onDelete }) {
+function SortableBookmarkItem({ company, index, onDelete, onClickCompany }) {
   const {
     attributes, // 접근성 관련 attr → 보통 루트에 붙임
     listeners, // 드래그 이벤트 핸들러 → "핸들"에만 붙일거(move icon)
@@ -46,6 +46,16 @@ function SortableBookmarkItem({ company, index, onDelete }) {
     transition,
   };
 
+  const handleDeleteClick = (e) => {
+    e.stopPropagation(); // ✅ 아이템 클릭이랑 충돌 방지
+    onDelete?.();
+  };
+
+  const handleCompanyClick = (e) => {
+    e.stopPropagation(); // ✅ 드래그/루트 이벤트랑 충돌 방지
+    onClickCompany?.();
+  };
+
   return (
     <div
       className="bookmark-item"
@@ -58,10 +68,10 @@ function SortableBookmarkItem({ company, index, onDelete }) {
           className="bookmark-delete"
           src={xIcon}
           alt="delete"
-          onClick={onDelete}
+          onClick={handleDeleteClick}
         />
 
-        <p className="bookmark-company text-lg">
+        <p className="bookmark-company text-lg" onClick={handleCompanyClick}>
           {index + 1}. {company.name}
         </p>
       </div>
@@ -70,6 +80,7 @@ function SortableBookmarkItem({ company, index, onDelete }) {
         src={moveIcon}
         alt="move"
         {...listeners}
+        onClick={(e) => e.stopPropagation()}
       />
     </div>
   );
@@ -141,6 +152,7 @@ const Bookmark = () => {
                 company={company}
                 index={index}
                 onDelete={() => handleClickDelete(index)}
+                onClickCompany={() => navigate(`/company/${company.id}`)}
               />
             ))}
           </section>

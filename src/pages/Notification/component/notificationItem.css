@@ -3,12 +3,13 @@
   width: 100vw;
   padding: 15px 22px;
   gap: 15px;
+  border-bottom: 1px solid var(--gray2);
 }
 
 .alert-icon {
-  margin: 2px 0;
-  width: 12px;
-  height: 12px;
+  margin: 5px 0;
+  width: var(--default-fz);
+  height: var(--default-fz);
   border-radius: 999px;
 }
 

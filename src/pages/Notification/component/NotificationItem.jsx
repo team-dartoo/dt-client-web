@@ -26,7 +26,7 @@ const NotificationItem = ({
       {/* 오른쪽 본문 */}
       <section className="alert-right">
         <div className="alert-header">
-          <div className="company-name text-base">{companyName}</div>
+          <div className="company-name text-lg">{companyName}</div>
           <div
             className={`alert-date text-xs ${
               timeType === "recent" ? "recent-time" : ""
@@ -36,19 +36,17 @@ const NotificationItem = ({
           </div>
         </div>
 
-        <div className="alert-category">{categoryText}</div>
+        <div className="alert-category text-base">{categoryText}</div>
 
         {/* 본문 분기 */}
         {type === "AI_SUMMARY" ? (
-          <ul className="alert-summary text-xs">
+          <ul className="alert-summary">
             {summaryBullets?.map((item, index) => (
               <li key={index}>{item}</li>
             ))}
           </ul>
         ) : (
-          <p className="alert-content text-xs">
-            공시 업데이트 : {disclosureTitle}
-          </p>
+          <p className="alert-content">공시 업데이트 : {disclosureTitle}</p>
         )}
       </section>
     </div>
