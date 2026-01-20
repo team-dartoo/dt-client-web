@@ -88,3 +88,7 @@
   background: var(--mainBlue);
   color: white;
 }
+
+.CompanyDetail .cancel {
+  display: none;
+}

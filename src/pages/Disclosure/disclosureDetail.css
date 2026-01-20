@@ -1,0 +1,169 @@
+.DisclosureDetail {
+  background-color: var(--gray1);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.DisclosureDetail .header {
+  border-bottom: transparent;
+  background: transparent;
+  background: var(--mainBlue);
+  color: white;
+}
+
+.dis-header,
+.dis-tag,
+.dis-ai {
+  background-color: white;
+}
+
+.dis-header {
+  padding: 30px 22px 15px 22px;
+}
+
+.dis-tag {
+  padding: 14px 20px;
+}
+
+.dis-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.dis-sub h2 {
+  color: var(--mainBlue);
+  font-weight: 700;
+}
+
+.dis-sub h3 {
+  color: var(--subText);
+
+  font-weight: 400;
+  line-height: normal;
+}
+
+.dis-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.emotion-tag {
+  display: flex;
+  padding: 8px 16px;
+  gap: 3px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.dis-tag {
+  display: flex;
+  flex-direction: column;
+  padding: 9px 20px;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.tag-wrapper {
+  display: flex;
+  gap: 10px;
+}
+
+.common-tag {
+  border-radius: 100px;
+  background: var(--gray1);
+  padding: 8px 16px;
+}
+.dis-ai {
+  padding: 17px 25px;
+}
+
+.dis-ai-list {
+  margin: 8px;
+}
+
+.dis-btn-wrapper {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dis-btn {
+  gap: 5px;
+  border-radius: 15px;
+}
+
+.dis-notice {
+  color: var(--subText);
+  margin: 12px 25px;
+}
+
+.dis-notice h5 {
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.dis-notice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.positive {
+  color: #419653;
+  background: #eefbf0;
+}
+
+.negative {
+  color: #964f41;
+  background: #fbeeee;
+}
+
+.neutral {
+  color: #7a7a7a;
+  background: #f0f0f0;
+}
+
+.dis-chatBar {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  width: 90svw;
+  max-width: 400px;
+  height: 50px;
+  padding: 10px 14px;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 12px;
+  border: 2px solid var(--mainBlue);
+  background: #fff;
+  color: var(--gray4);
+  font-weight: 400;
+}
+
+.tooltip-wrap {
+  position: relative;
+}
+
+.tooltip {
+  position: absolute;
+  left: 80%;
+  bottom: 80%;
+  width: 172px;
+  height: 50px;
+  padding: 10px;
+  max-width: 240px;
+  color: var(--subText);
+  text-align: center;
+  font-size: 12px;
+  z-index: 1000;
+  border-radius: 5px;
+  background: #fff;
+  box-shadow: 2px 2px 2px 0 rgba(0, 0, 0, 0.05);
+}

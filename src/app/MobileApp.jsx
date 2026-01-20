@@ -32,6 +32,8 @@ import Premium from "../pages/Profile/Premium";
 
 import CompanyDetail from "../pages/Company/CompanyDetail";
 
+import DisclosureDetail from "../pages/Disclosure/DisclosureDetail";
+
 const MobileApp = () => {
   const location = useLocation();
   const navigationType = useNavigationType(); // PUSH, POP, REPLACE
@@ -111,6 +113,10 @@ const MobileApp = () => {
           <Route path="/profile/premium" element={withMotion(<Premium />)} />
 
           <Route path="/company/:id" element={withMotion(<CompanyDetail />)} />
+          <Route
+            path="/disclosure/detail"
+            element={withMotion(<DisclosureDetail />)}
+          />
         </Routes>
       </AnimatePresence>
     </div>

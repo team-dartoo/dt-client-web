@@ -1,4 +1,5 @@
 import { React, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import NavBar from "../../shared/components/Navbar";
 import Header from "../../shared/components/Header";
@@ -6,7 +7,11 @@ import NotificationItem from "./component/NotificationItem";
 
 import { useNotification } from "@/contexts/NotificationContext";
 
+import settings from "@/images/settings_icon.svg";
+
 const Notification = () => {
+  const navigate = useNavigate();
+
   const { markAsRead } = useNotification();
 
   useEffect(() => {
@@ -17,7 +22,14 @@ const Notification = () => {
   return (
     <div className="Notification page">
       <NavBar />
-      <Header title="알림함" />
+      <Header
+        title="알림함"
+        right={
+          <button onClick={() => navigate("/notification/setting")}>
+            <img src={settings} alt="settings" />
+          </button>
+        }
+      />
       {/* 최신순으로 알림 불러오기 필요 */}
 
       <NotificationItem

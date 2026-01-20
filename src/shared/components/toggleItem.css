@@ -1,0 +1,60 @@
+.toggle-item {
+  display: flex;
+  margin: 20px 10px;
+  gap: 10px;
+}
+
+.toggle-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toggle-ui {
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  background: #d1d5db; /* off */
+  position: relative;
+  flex: 0 0 auto;
+  transition: background 0.2s;
+}
+
+.toggle-ui::after {
+  content: "";
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #fff;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.2s;
+}
+
+.toggle-item .toggle-input:checked + .toggle-ui {
+  background: var(--mainBluePoint);
+}
+
+.toggle-item .toggle-input:checked + .toggle-ui::after {
+  transform: translateX(24px);
+}
+
+.toggle-item.is-disabled {
+  opacity: 0.45;
+}
+
+.toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.toggle-label {
+  font-weight: 500;
+}
+
+.toggle-desc {
+  color: var(--gray5);
+  font-weight: 400;
+}

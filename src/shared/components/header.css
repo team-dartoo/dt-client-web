@@ -4,7 +4,7 @@
   left: 0;
   width: 100vw;
   /********************/
-  height: 70px;
+  height: 60px;
   /********************/
   display: flex;
   justify-content: space-between;
@@ -30,7 +30,7 @@
 
 .header-left,
 .header-right {
-  width: 40px; /* 버튼 영역 크기 통일 */
+  width: 25px; /* 버튼 영역 크기 통일 */
   display: flex;
   justify-content: center;
   align-items: center;
