@@ -1,4 +1,3 @@
-// Bookmark.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./bookmark.css";
@@ -32,13 +31,8 @@ const initialCompanies = [
 
 // 개별 아이템
 function SortableBookmarkItem({ company, index, onDelete, onClickCompany }) {
-  const {
-    attributes, // 접근성 관련 attr → 보통 루트에 붙임
-    listeners, // 드래그 이벤트 핸들러 → "핸들"에만 붙일거(move icon)
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id: company.id });
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: company.id });
 
   // 자연스러운 드래그 움직임
   const style = {
@@ -47,12 +41,12 @@ function SortableBookmarkItem({ company, index, onDelete, onClickCompany }) {
   };
 
   const handleDeleteClick = (e) => {
-    e.stopPropagation(); // ✅ 아이템 클릭이랑 충돌 방지
+    e.stopPropagation();
     onDelete?.();
   };
 
   const handleCompanyClick = (e) => {
-    e.stopPropagation(); // ✅ 드래그/루트 이벤트랑 충돌 방지
+    e.stopPropagation();
     onClickCompany?.();
   };
 
@@ -113,8 +107,8 @@ const Bookmark = () => {
   };
 
   const handleConfirmDelete = () => {
+    // 삭제 처리
     if (targetIndex === null) return;
-
     setCompanies((prev) => prev.filter((_, i) => i !== targetIndex));
     setShowAlert(false);
     setTargetIndex(null);

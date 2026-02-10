@@ -5,7 +5,7 @@
 
 /** Variants **/
 :root {
-  --default-fz: 0.875rem;
+  --default-fz: 0.865rem;
   /* Primary Colors */
   --mainBlue: #3c6eaf;
   --mainBlueLight: #f2f8ff;
@@ -38,6 +38,8 @@
 /* layout */
 * {
   box-sizing: border-box;
+  white-space: nowrap;
+  word-break: keep-all;
 }
 
 /** typography **/
@@ -188,7 +190,7 @@ h6 {
 
 .chip {
   border: 0;
-  padding: 13px 15px;
+  padding: 10px 14px;
   border-radius: 9999px;
   background: var(--mainBlueLight);
   color: var(--mainText);

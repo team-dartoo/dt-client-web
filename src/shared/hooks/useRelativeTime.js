@@ -7,7 +7,11 @@ function formatRelativeTime(dateString) {
 
   const diffMinutes = Math.floor(diffMs / (1000 * 60));
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24)); // ✅ 여기 수정
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  // 24시간 내 - 푸른 글씨로 n분 전, n시간 전, 방금 전(1분 이내)
+  // 7일 내 - 회색 글씨로 n일 전
+  // 7일 이후 - 회색 글씨로 전체 날짜 표시
 
   // 24시간 이내 → recent
   if (diffDays < 1) {

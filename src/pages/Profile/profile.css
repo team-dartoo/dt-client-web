@@ -49,7 +49,7 @@
 
 .menu-item {
   display: flex;
-  height: 70px;
+  height: 60px;
   padding: 10px 15px;
   align-items: center;
   font-size: calc(var(--default-fz) * 1.2857);

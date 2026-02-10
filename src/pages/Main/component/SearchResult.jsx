@@ -51,7 +51,7 @@ function highlight(text, q) {
         <strong key={i}>{part}</strong>
       ) : (
         <span key={i}>{part}</span>
-      )
+      ),
     );
 }
 
@@ -67,7 +67,7 @@ const SearchResult = ({ query }) => {
 
     // TODO: 실제 서버 검색 붙일 곳
     const result = DUMMY_COMPANIES.filter((c) =>
-      c.name.toLowerCase().includes(term)
+      c.name.toLowerCase().includes(term),
     );
     setList(result);
   }, [query]);
@@ -78,7 +78,6 @@ const SearchResult = ({ query }) => {
 
     return (
       <span className={type === "recent" ? "recent-time" : undefined}>
-        {" "}
         {text}
       </span>
     );
@@ -98,7 +97,8 @@ const SearchResult = ({ query }) => {
                 <RelativeTime date={item.date} />
               </p>
             </div>
-            <div className="resukt-right">
+            <div className="result-right">
+              {/* TODO : 북마크 연동 */}
               <svg
                 width="22"
                 height="21"

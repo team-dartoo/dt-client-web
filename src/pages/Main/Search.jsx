@@ -11,16 +11,16 @@ const Search = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // ✅ URL의 q = 확정된 검색어(검색 결과 기준)
+  // URL의 q = 확정된 검색어(검색 결과 기준)
   const q = useMemo(() => {
     const params = new URLSearchParams(location.search);
     return params.get("q") || "";
   }, [location.search]);
 
-  // ✅ 검색바에 보이는 값
+  // 검색바에 보이는 값
   const [keyword, setKeyword] = useState(q);
 
-  // ✅ 포커스 상태 (포커스면 HOME)
+  // 포커스 상태 (포커스면 HOME)
   const [isFocused, setIsFocused] = useState(false);
 
   // q가 바뀔 때, 검색바에도 반영
@@ -47,7 +47,7 @@ const Search = () => {
     setIsFocused(false);
   };
 
-  // ✅ X 버튼: keyword + q 둘 다 리셋
+  // X 버튼: keyword + q 둘 다 리셋
   const handleClear = () => {
     setKeyword("");
     // URL에서도 q 제거
@@ -75,7 +75,7 @@ const Search = () => {
         onChange={handleSearchChange}
         onSubmit={handleSearchSubmit}
         onFocusChange={setIsFocused}
-        onClear={handleClear} // 🔥 X 버튼 전용 콜백
+        onClear={handleClear} // X 버튼 전용 콜백
       />
 
       {isHomeMode ? (

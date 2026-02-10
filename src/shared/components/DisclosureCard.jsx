@@ -1,29 +1,46 @@
-import React, { useState } from "react";
-
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import "./disclosureCard.css";
 import chevronRight from "@/images/chevron-right.svg";
 
-const DisclosureCard = () => {
-  const [sentiment, setSentiment] = useState("positive"); //positive, neutral, negative
+const DisclosureCard = ({
+  companyId,
+  companyName,
+  companyCode,
+  disclosureId,
+  title,
+  timeAgo,
+  isNew,
+  sentiment, // "positive" | "neutral" | "negative"
+  summaryStatus, // "loading" | "success"  (에러도 loading으로 처리)
+  summaryLines = [],
+}) => {
+  const navigate = useNavigate();
 
   return (
     <div className="disclosure-card">
       {/* 헤더 */}
       <div className="card-header">
         <div className="card-header-left">
-          <span className="company-name text-2xl border2">삼성전자</span>
-          <span className="company-code text-xs">(005930)</span>
+          <span
+            className="company-name text-2xl"
+            onClick={() => navigate(`/company/${companyId}`)}
+          >
+            {companyName}
+          </span>
+          <span className="company-code text-xs">({companyCode})</span>
         </div>
+
         <div className="card-header-right">
-          <span className="new-badge">new</span>
-          <span className="time-ago">3시간 전</span>
+          {isNew && <span className="new-badge">new</span>}
+          <span className="time-ago">{timeAgo}</span>
         </div>
       </div>
 
       {/* 공시 정보 */}
       <div className="card-meta">
         <span className="meta-icon">📃</span>
-        <span className="meta-text text-base">2024년 4분기 실적공시</span>
+        <span className="meta-text text-base">{title}</span>
       </div>
 
       {/* AI 요약 */}
@@ -31,30 +48,37 @@ const DisclosureCard = () => {
         <div className="ai-summary-title">
           <span className="ai-title-text">🤖 AI 세줄 요약</span>
         </div>
-        {/*로딩*/}
-        {/* <div className="ai-summary-loading text-base">요약 중입니다...</div> */}
-        {/*실패*/}
-        {/* <div className="ai-summary-fail text-base">
-          요약을 불러오지 못했습니다.
-          <button className="primary-bg white">재시도</button>
-        </div> */}
-        {/*성공*/}
-        <ul className="ai-summary-list text-base">
-          <li className="ai-summary-item">
-            • 매출 75조원으로 전년 대비 8% 증가
-          </li>
-          <li className="ai-summary-item">• 메모리 반도체 부문 흑자 전환</li>
-          <li className="ai-summary-item">• 1분기 실적도 개선 전망</li>
-        </ul>
+
+        {summaryStatus === "loading" ? (
+          <div className="ai-summary-loading text-base">요약 중입니다...</div>
+        ) : (
+          <ul className="ai-summary-list text-base">
+            {summaryLines.map((line, idx) => (
+              <li className="ai-summary-item" key={idx}>
+                • {line}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {/* 하단 */}
       <div className="card-footer">
-        <div className="detail-link">
+        <div
+          className="detail-link"
+          onClick={() => navigate(`/disclosure/${disclosureId}`)}
+        >
           <span className="detail-text text-base">자세히 보기</span>
           <img src={chevronRight} alt="detail-link" />
         </div>
-        <span className={`sentiment-chip ${sentiment}`}>긍정적</span>
+
+        <span className={`sentiment-chip ${sentiment}`}>
+          {sentiment === "positive"
+            ? "긍정적"
+            : sentiment === "negative"
+              ? "부정적"
+              : "중립"}
+        </span>
       </div>
     </div>
   );
