@@ -77,7 +77,7 @@ const Login = () => {
         </form>
 
         <h4>로딩 동작 테스트 버튼 </h4>
-        <Loading />
+        {/* <Loading /> */}
         <button onClick={() => showToast("로그인 성공!", "success")}>
           토스트 띄우기 - 성공
         </button>
