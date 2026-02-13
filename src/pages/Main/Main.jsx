@@ -104,11 +104,11 @@ const Main = () => {
       <NavBar />
       <Header
         title={<img src={dartooLogo} alt="dartoo" />}
-        right={
-          <button onClick={() => navigate(-1)}>
-            <img src={chatIcon} alt="AI-chat" />
-          </button>
-        }
+        // right={
+        //   <button onClick={() => navigate(-1)}>
+        //     <img src={chatIcon} alt="AI-chat" />
+        //   </button>
+        // }
       />
       <SearchBar />
 

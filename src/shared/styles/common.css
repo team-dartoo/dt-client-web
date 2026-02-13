@@ -6,6 +6,8 @@
 /** Variants **/
 :root {
   --default-fz: 0.865rem;
+
+  --header-height: 3.75rem;
   /* Primary Colors */
   --mainBlue: #3c6eaf;
   --mainBlueLight: #f2f8ff;
@@ -182,8 +184,8 @@ h6 {
 
 .page {
   position: relative;
-  height: 100vh;
-  padding-top: 60px;
+  height: calc(100dvh - var(--header-height));
+  padding-top: var(--header-height);
 }
 
 /* chip */

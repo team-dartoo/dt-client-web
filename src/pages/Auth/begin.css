@@ -1,5 +1,5 @@
 .begin {
-  padding: 0;
+  padding: 12vh 0px;
   margin: 0;
 }
 
@@ -44,10 +44,6 @@
   align-items: center;
   gap: 18px;
 }
-
-/* .begin {
-  padding: 12vh 0px;
-} */
 
 .kakao {
   background-color: #ffe812;

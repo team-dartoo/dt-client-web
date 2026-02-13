@@ -4,12 +4,14 @@
   left: 0;
   width: 100vw;
   /********************/
-  height: 60px;
+  min-height: 3.75rem;
+  /* height: 60px; */
   /********************/
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 26px 24px;
+  padding: 1rem 1.5rem;
+  box-sizing: border-box;
   font-size: calc(var(--default-fz) * 1.4286);
   background-color: white;
   border-bottom: 1px solid #eee;
