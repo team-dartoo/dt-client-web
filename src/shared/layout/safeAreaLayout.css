@@ -1,7 +1,0 @@
-.safe-area-root {
-  min-height: 100dvh; /* 모바일에서 주소창 변화에도 안정적인 높이 */
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
-}
