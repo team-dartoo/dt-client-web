@@ -43,16 +43,6 @@
   white-space: nowrap;
   word-break: keep-all;
 }
-body::before {
-  content: " ";
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: env(safe-area-inset-top);
-  background: red;
-  z-index: 9999;
-}
 
 /** typography **/
 
