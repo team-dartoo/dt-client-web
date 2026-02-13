@@ -4,7 +4,7 @@
   left: 0;
   width: 100vw;
   /********************/
-  /* min-height: 3.75rem; */
+  min-height: 3.75rem;
   /* height: 60px; */
   /********************/
   display: flex;

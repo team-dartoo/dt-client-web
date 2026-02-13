@@ -43,6 +43,16 @@
   white-space: nowrap;
   word-break: keep-all;
 }
+body::before {
+  content: " ";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top);
+  background: red;
+  z-index: 9999;
+}
 
 /** typography **/
 
@@ -184,7 +194,7 @@ h6 {
 
 .page {
   position: relative;
-  height: calc(100dvh - var(--header-height));
+  min-height: 100dvh;
   padding-top: var(--header-height);
 }
 

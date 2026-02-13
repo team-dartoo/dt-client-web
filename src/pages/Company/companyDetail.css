@@ -4,7 +4,7 @@
 
 .CompanyDetail .header {
   border-bottom: transparent;
-  background: transparent;
+  background: var(--mainBlueDark);
   color: white;
 }
 
