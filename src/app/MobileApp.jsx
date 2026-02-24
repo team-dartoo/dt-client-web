@@ -114,23 +114,9 @@ const MobileApp = () => {
               }
             />
 
-            {/* 메인은 의도적으로 애니메이션 제외(네가 말한 정책 유지) */}
             <Route path="/main" element={<Main />} />
 
-            {/* Search는 의도적으로 별도 애니메이션(네 정책 유지) */}
-            <Route
-              path="/main/search"
-              element={
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  transition={{ duration: 0.15, ease: "easeInOut" }}
-                >
-                  <Search />
-                </motion.div>
-              }
-            />
+            <Route path="/main/search" element={<Search />} />
 
             <Route path="/bookmark" element={<Bookmark />} />
 

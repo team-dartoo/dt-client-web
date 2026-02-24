@@ -11,11 +11,9 @@ const Search = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // URL의 q = 확정된 검색어(검색 결과 기준)
-  const q = useMemo(() => {
-    const params = new URLSearchParams(location.search);
-    return params.get("q") || "";
-  }, [location.search]);
+  const q = new URLSearchParams(location.search).get("q") || "";
+
+  const isHomeMode = !q;
 
   // 검색바에 보이는 값
   const [keyword, setKeyword] = useState(q);
@@ -27,9 +25,6 @@ const Search = () => {
   useEffect(() => {
     setKeyword(q);
   }, [q]);
-
-  // HOME 모드 조건: 포커스 중 또는 q가 비어 있을 때
-  const isHomeMode = isFocused || !q;
 
   // 검색바에 타이핑
   const handleSearchChange = (value) => {

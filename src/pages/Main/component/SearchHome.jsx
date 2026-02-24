@@ -47,11 +47,13 @@ const SearchHome = ({ onKeywordClick }) => {
         <div className="recentKW-title">최근 기록</div>
         <div className="recentKW-list">
           {recentKeywords.map((kw, index) => (
-            <div key={index} className="recentKW-item">
+            <div
+              key={index}
+              className="recentKW-item"
+              onClick={() => onKeywordClick(kw)}
+            >
               <img src={xIcon} alt="delete" />
-              <p className="text-lg" onClick={() => onKeywordClick(kw)}>
-                {kw}
-              </p>
+              <p className="text-lg">{kw}</p>
             </div>
           ))}
         </div>

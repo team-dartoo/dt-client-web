@@ -25,18 +25,18 @@ const DUMMY_COMPANIES = [
     name: "삼성전자",
     date: "2025-01-10T18:40:00",
   },
-  // {
-  //   code: "005930",
-  //   name: "삼성전자",
-  //   title: "삼성전자 연결재무제표 기준 분기보고서 공시",
-  //   date: "2025-11-18T12:00:00", // 2025.11.18 오후 12시
-  // },
-  // {
-  //   code: "005930",
-  //   name: "삼성전자",
-  //   title: "삼성전자 주요 경영사항 신고 공시",
-  //   date: "2025-11-19T12:00:00", // 2025.11.19 오후 12시
-  // },
+  {
+    code: "005930",
+    name: "삼성전자",
+    title: "삼성전자 연결재무제표 기준 분기보고서 공시",
+    date: "2025-11-18T12:00:00", // 2025.11.18 오후 12시
+  },
+  {
+    code: "005930",
+    name: "삼성전자",
+    title: "삼성전자 주요 경영사항 신고 공시",
+    date: "2025-11-19T12:00:00", // 2025.11.19 오후 12시
+  },
 ];
 
 // 검색어 하이라이트
@@ -84,7 +84,7 @@ const SearchResult = ({ query }) => {
   };
 
   return (
-    <div className="SearchList page">
+    <div className="SearchList">
       <ul className="result-list">
         {list.map((item) => (
           <li key={item.code} className="result-item">

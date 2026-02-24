@@ -6,46 +6,48 @@ import "./searchbar.css";
 import searchIcon from "@/images/search_icon.svg";
 import backIcon from "@/images/search_back_icon.svg";
 
-const SearchBar = ({ value, onChange, onSubmit, onFocusChange, onClear }) => {
+const SearchBar = ({ value, onChange, onSubmit, onClear }) => {
   const [keyword, setKeyword] = useState(value ?? "");
   const inputRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
 
-  const isSearchPage = location.pathname === "/main/search";
-  const isSearchContext = location.pathname.startsWith("/main/search");
-  const isMainPage = location.pathname === "/main";
+  const pathname = location.pathname;
+  const q = new URLSearchParams(location.search).get("q");
 
-  // 🔥 부모 value ↔ 내부 keyword 동기화
+  const isMainPage = pathname === "/main";
+  const isSearchPage = pathname === "/main/search";
+
+  // 🔹 부모 value 변경 시 동기화
   useEffect(() => {
     setKeyword(value ?? "");
   }, [value]);
 
-  // 검색 페이지 들어왔을 때 자동 포커스 (원하면 조건 추가)
+  // 🔹 검색 페이지 진입 시 자동 포커스
   useEffect(() => {
     if (isSearchPage && inputRef.current) {
       inputRef.current.focus();
     }
   }, [isSearchPage]);
 
-  // main에서 검색바 누르면 /main/search로 이동
+  // 🔹 main에서 클릭하면 search로 이동
   const handleWrapperClick = () => {
-    if (!isSearchContext) {
+    if (isMainPage) {
       navigate("/main/search");
     }
   };
 
-  const handleInputFocus = () => {
-    onFocusChange?.(true);
-  };
-
-  const handleInputBlur = () => {
-    onFocusChange?.(false);
-  };
-
+  // 🔹 뒤로가기 버튼 로직 개선
   const handleBack = (e) => {
     e.stopPropagation();
-    navigate("/main");
+
+    if (q) {
+      // 결과 화면이면 → 검색 홈
+      navigate("/main/search", { replace: true });
+    } else if (isSearchPage) {
+      // 검색 홈이면 → 메인
+      navigate("/main");
+    }
   };
 
   const handleChange = (e) => {
@@ -54,10 +56,9 @@ const SearchBar = ({ value, onChange, onSubmit, onFocusChange, onClear }) => {
     onChange?.(v);
   };
 
-  // ✅ X 버튼: 여기선 상태/URL 직접 건드리지 말고 부모에 위임
   const handleClear = (e) => {
     e.stopPropagation();
-    onClear?.(); // 부모(Search.jsx)가 keyword + URL 둘 다 리셋
+    onClear?.();
     inputRef.current?.focus();
   };
 
@@ -72,7 +73,7 @@ const SearchBar = ({ value, onChange, onSubmit, onFocusChange, onClear }) => {
 
   return (
     <div
-      className={`searchBar ${isSearchContext ? "active" : ""}`}
+      className={`searchBar ${!isMainPage ? "active" : ""}`}
       onClick={handleWrapperClick}
     >
       <img
@@ -88,13 +89,11 @@ const SearchBar = ({ value, onChange, onSubmit, onFocusChange, onClear }) => {
         className="search-input text-base"
         placeholder="기업명을 검색하세요"
         value={keyword}
-        onFocus={handleInputFocus}
-        onBlur={handleInputBlur}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
       />
 
-      {keyword && isSearchContext && (
+      {keyword && !isMainPage && (
         <button className="clear-btn" onClick={handleClear} aria-label="clear">
           ✕
         </button>

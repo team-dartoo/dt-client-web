@@ -6,6 +6,14 @@ function ScrollToTop() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    const el = document.querySelector(".page");
+    if (el) el.scrollTop = 0;
+  }, [pathname]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }, 0);
   }, [pathname]);
 
   return null;
