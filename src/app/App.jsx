@@ -6,6 +6,7 @@ import "./../shared/styles/common.css";
 
 import { ToastProvider } from "../contexts/ToastContext";
 import { NotificationProvider } from "../contexts/NotificationContext";
+import { BookmarkProvider } from "../contexts/BookmarkContext";
 
 export default function App() {
   const isMobile = useIsMobile();
@@ -13,7 +14,9 @@ export default function App() {
   return (
     <ToastProvider>
       <NotificationProvider>
-        {isMobile ? <MobileApp /> : <PcApp />}
+        <BookmarkProvider>
+          {isMobile ? <MobileApp /> : <PcApp />}
+        </BookmarkProvider>
       </NotificationProvider>
     </ToastProvider>
   );

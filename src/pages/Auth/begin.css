@@ -75,6 +75,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
+
+  aspect-ratio: 683 / 777;
 }
 
 .begin .title-wrapper img {

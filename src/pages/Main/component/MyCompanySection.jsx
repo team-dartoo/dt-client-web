@@ -5,9 +5,45 @@ import chevronUpIcon from "@/images/chevron_up_icon.svg";
 
 import DisclosureCard from "../../../shared/components/DisclosureCard";
 
+const CardSkeleton = () => (
+  <div className="disclosure-card skeleton-card" aria-hidden="true">
+    {/* 헤더 */}
+    <div className="card-header">
+      <div className="card-header-left">
+        <div className="sk sk-title sk-shimmer" />
+      </div>
+      <div className="card-header-right">
+        <div className="sk sk-time sk-shimmer" />
+      </div>
+    </div>
+
+    {/* 공시 정보 */}
+    <div className="card-meta">
+      <div className="sk sk-meta sk-shimmer" />
+    </div>
+
+    {/* AI 요약 */}
+    <div className="ai-summary-box">
+      <div className="ai-summary-title">
+        <div className="sk sk-ai-title sk-shimmer" />
+      </div>
+
+      <ul className="ai-summary-list">
+        <li className="sk sk-line sk-shimmer" />
+        <li className="sk sk-line sk-shimmer" />
+        <li className="sk sk-line sk-shimmer" />
+      </ul>
+    </div>
+
+    {/* 하단 */}
+    <div className="card-footer"></div>
+  </div>
+);
+
 const MyCompanySection = ({
   companies = [],
   disclosures = [],
+  loading = false,
   defaultExpanded = false,
 }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
@@ -15,7 +51,7 @@ const MyCompanySection = ({
 
   const allChips = [{ companyId: "ALL", name: "전체" }, ...companies];
 
-  // ✅ 선택된 칩 기준으로 필터링
+  // 선택된 칩 기준으로 필터링
   const filteredDisclosures = useMemo(() => {
     // 기업 별로 묶는 함수
     const groupByCompany = (list) => {
@@ -71,7 +107,13 @@ const MyCompanySection = ({
       </div>
 
       <div className="card-wrapper">
-        {filteredDisclosures.length === 0 ? (
+        {loading ? (
+          <>
+            <CardSkeleton />
+            <CardSkeleton />
+            <CardSkeleton />
+          </>
+        ) : filteredDisclosures.length === 0 ? (
           <div className="empty-state text-base">
             선택한 기업의 공시가 없습니다.
           </div>
@@ -87,8 +129,8 @@ const MyCompanySection = ({
               timeAgo={item.timeAgo}
               isNew={item.isNew}
               sentiment={item.sentiment}
-              summaryStatus={item.summary.status}
-              summaryLines={item.summary.lines}
+              summaryStatus={item.summary?.status ?? "loading"}
+              summaryLines={item.summary?.lines ?? []}
             />
           ))
         )}

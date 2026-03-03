@@ -14,7 +14,57 @@
   height: max-content;
   border-radius: 10px;
   padding: 0 20px;
+
+  min-height: 150px;
 }
+
+/* 스켈레톤 */
+
+.today-item.skeleton {
+  border-bottom: 1px solid var(--gray2);
+}
+
+.skeleton-line {
+  width: 100%;
+  height: 20px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* 반짝이는 쉬머 효과 */
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 60%;
+  height: 100%;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+
+  animation: shimmer 1.1s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -60%;
+  }
+  100% {
+    left: 120%;
+  }
+}
+
+/* 스켈레톤 */
 
 .today-item {
   display: flex;

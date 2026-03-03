@@ -9,12 +9,56 @@ import DisclosureCard from "../../shared/components/DisclosureCard";
 import Alert from "../../shared/components/Alert";
 import Loading from "../../shared/components/Loading";
 
+const StarFilled = () => (
+  <svg
+    width="30"
+    height="30"
+    viewBox="0 0 30 30"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M15 2.5L18.8625 10.325L27.5 11.5875L21.25 17.675L22.725 26.275L15 22.2125L7.275 26.275L8.75 17.675L2.5 11.5875L11.1375 10.325L15 2.5Z"
+      fill="#FFED93"
+      stroke="#FFED93"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+const StarOutline = () => (
+  <svg
+    width="30"
+    height="30"
+    viewBox="0 0 30 30"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M15 2.5L18.8625 10.325L27.5 11.5875L21.25 17.675L22.725 26.275L15 22.2125L7.275 26.275L8.75 17.675L2.5 11.5875L11.1375 10.325L15 2.5Z"
+      stroke="white"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+);
+
 const CompanyDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
   const [activeTab, setActiveTab] = useState("DISCLOSURE"); // DISCLOSURE | FINANCE | NEWS
   const [showAlert, setShowAlert] = useState(false);
+
+  // ✅ 북마크 상태(임시: 나중에 전역 상태/서버로 교체)
+  const [isBookmarked, setIsBookmarked] = useState(false);
+
+  const handleToggleBookmark = () => {
+    // TODO: 전역 북마크/서버 연동 시 여기만 교체
+    // 예) await api.post(`/bookmarks/toggle`, { companyId: id })
+    setIsBookmarked((v) => !v);
+  };
 
   //데이터/로딩/에러
   const [company, setCompany] = useState(null);
@@ -91,6 +135,16 @@ const CompanyDetail = () => {
         left={
           <button onClick={() => navigate(-1)}>
             <img src={xIcon} alt="backIcon" />
+          </button>
+        }
+        right={
+          <button
+            type="button"
+            className="bookmark-btn"
+            aria-label={isBookmarked ? "북마크 해제" : "북마크"}
+            onClick={handleToggleBookmark}
+          >
+            {isBookmarked ? <StarFilled /> : <StarOutline />}
           </button>
         }
       />

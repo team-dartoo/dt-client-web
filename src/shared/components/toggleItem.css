@@ -37,7 +37,7 @@
 }
 
 .toggle-item .toggle-input:checked + .toggle-ui::after {
-  transform: translateX(24px);
+  transform: translateX(18px);
 }
 
 .toggle-item.is-disabled {
