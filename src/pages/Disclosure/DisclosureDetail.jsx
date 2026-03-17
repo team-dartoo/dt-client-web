@@ -1,3 +1,8 @@
+// api 목록
+// 단일 공시 조회
+// 공시 원문 URL 조회
+// 플랜 정보 조회
+
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Loading from "../../shared/components/Loading";
@@ -8,20 +13,64 @@ import infoIcon from "@/images/info.svg";
 import elinkIcon from "@/images/external-link.svg";
 import sendIcon from "@/images/send_icon.svg";
 import "./disclosureDetail.css";
+import { disclosureApi } from "../../shared/api/disclosureApi";
+import { useRelativeTime } from "../../shared/hooks/useRelativeTime";
+import { useAuth } from "../../contexts/useAuth";
+import AuthPromptSheet from "../../shared/components/AuthPromptSheet";
+
+const toSummaryLines = (text) => {
+  if (!text) return ["요약이 아직 없어요."];
+
+  const parts = text
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  if (parts.length >= 3) return parts.slice(0, 3);
+  return [text];
+};
+
+const getSentimentInfo = (tags = []) => {
+  if (tags.includes("유상증자")) {
+    return {
+      label: "부정적",
+      type: "negative",
+      tooltip: "AI 감성 분석 결과를 기반으로\n부정적으로 분류된 공시입니다.",
+    };
+  }
+
+  if (
+    tags.includes("실적") ||
+    tags.includes("IR") ||
+    tags.includes("기업설명회")
+  ) {
+    return {
+      label: "긍정적",
+      type: "positive",
+      tooltip: "AI 감성 분석 결과를 기반으로\n긍정적으로 분류된 공시입니다.",
+    };
+  }
+
+  return {
+    label: "중립",
+    type: "neutral",
+    tooltip: "AI 감성 분석 결과를 기반으로\n중립적으로 분류된 공시입니다.",
+  };
+};
 
 const DisclosureDetail = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { disclosureId } = useParams();
 
-  // (연동 대비) 일단 화면에서 쓸 데이터를 한 객체로 묶어둠
-  // 나중에 fetch 결과로 setDisclosure(...)만 하면 화면은 그대로 유지
   const [disclosure, setDisclosure] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 툴팁
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
+
+  const { isAuthenticated } = useAuth();
+  const [showSignupPrompt, setShowSignupPrompt] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -38,73 +87,106 @@ const DisclosureDetail = () => {
     };
   }, []);
 
-  // A: id 바뀔 때마다 상세 데이터 가져오는 흐름(지금은 더미)
   useEffect(() => {
-    let alive = true; // 언마운트 후 setState 방지용 플래그
+    let alive = true;
 
     const fetchDisclosureDetail = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // TODO: 백엔드 연결 시 아래 더미를 API 응답으로 교체
-        // 예: const res = await api.get(`/disclosures/${id}`);
-        //     if (!alive) return;
-        //     setDisclosure(res.data);
+        const [detailRes, urlRes] = await Promise.all([
+          disclosureApi.getDisclosureById(disclosureId),
+          disclosureApi.getDisclosureDownloadUrl(disclosureId),
+        ]);
 
-        const mock = {
-          id,
-          title: "2024년 4분기 실적 공시",
-          companyName: "삼성전자",
-          updatedAt: "2025.10.10",
-          sentiment: {
-            label: "긍정적",
-            tooltip:
-              "AI 감성 분석 결과를 기반으로\n긍정적으로 분류된 공시입니다.",
-          },
-          tags: ["실적발표", "반도체", "매출증가"],
-          summaryLines: [
-            "매출 75조원으로 전년 대비 8% 증가",
-            "메모리 반도체 부문 흑자 전환",
-            "1분기 실적도 개선 전망",
-          ],
-          originalUrl: "https://dart.fss.or.kr/",
+        if (!alive) return;
+
+        const sentiment = getSentimentInfo(detailRes.tags || []);
+
+        const mapped = {
+          disclosureId: detailRes._id,
+          title: detailRes.reportName,
+          companyName: detailRes.company?.corpName ?? "",
+          companyCode: detailRes.company?.stockCode ?? "",
+          corpCode: detailRes.company?.corpCode ?? "",
+          updatedAt: detailRes.updatedAt || detailRes.receptionDate,
+          sentiment,
+          tags: detailRes.tags || [],
+          summaryLines: toSummaryLines(detailRes.summary?.data?.text),
+          originalUrl: urlRes.downloadUrl,
         };
 
-        /*
-          const mock = { ... };
-          setDisclosure(mock);
-          여기서
-          const res = await api.get(`/disclosures/${id}`);
-          setDisclosure(res.data);
-          이거로 바꾸기
-          */
-
-        // fetch...
-        if (!alive) return;
-        setDisclosure(mock);
+        setDisclosure(mapped);
       } catch (e) {
         if (!alive) return;
+        console.error("공시 상세 조회 실패:", e);
         setError("공시 정보를 불러오지 못했습니다.");
       } finally {
         if (alive) setLoading(false);
       }
     };
 
-    fetchDisclosureDetail();
+    if (disclosureId) {
+      fetchDisclosureDetail();
+    }
+
     return () => {
       alive = false;
     };
-  }, [id]);
+  }, [disclosureId]);
 
-  // 로딩/에러
-  if (loading || error) {
+  if (loading) {
     return (
       <div className="DisclosureDetail page">
         <Loading />
       </div>
     );
   }
+
+  if (error || !disclosure) {
+    return (
+      <div className="DisclosureDetail page">
+        <Header
+          title="공시 상세"
+          left={
+            <button onClick={() => navigate(-1)}>
+              <img src={xIcon} alt="backIcon" />
+            </button>
+          }
+        />
+        <div className="content-box">
+          {error || "공시 정보를 찾을 수 없어요."}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <DisclosureDetailContent
+      disclosure={disclosure}
+      navigate={navigate}
+      open={open}
+      setOpen={setOpen}
+      wrapRef={wrapRef}
+      isAuthenticated={isAuthenticated}
+      showSignupPrompt={showSignupPrompt}
+      setShowSignupPrompt={setShowSignupPrompt}
+    />
+  );
+};
+
+function DisclosureDetailContent({
+  disclosure,
+  navigate,
+  open,
+  setOpen,
+  wrapRef,
+  isAuthenticated,
+  showSignupPrompt,
+  setShowSignupPrompt,
+}) {
+  const { text: relativeUpdatedAt } = useRelativeTime(disclosure.updatedAt);
 
   const {
     title,
@@ -121,21 +203,24 @@ const DisclosureDetail = () => {
       <Header
         title="공시 상세"
         left={
-          <button onClick={() => navigate(-1)}>
-            <img src={xIcon} alt="backIcon" />
-          </button>
+          isAuthenticated ? (
+            <button onClick={() => navigate(-1)}>
+              <img src={xIcon} alt="backIcon" />
+            </button>
+          ) : null
         }
         right={
-          // share 버튼
-          <button
-            type="button"
-            onClick={() => {
-              // TODO: Web Share API / 클립보드 복사 / RN 브릿지 등으로 구현
-            }}
-            aria-label="share"
-          >
-            <img src={shareIcon} alt="shareIcon" />
-          </button>
+          isAuthenticated ? (
+            <button
+              type="button"
+              onClick={() => {
+                // TODO: 공유 구현
+              }}
+              aria-label="share"
+            >
+              <img src={shareIcon} alt="shareIcon" />
+            </button>
+          ) : null
         }
       />
 
@@ -143,14 +228,14 @@ const DisclosureDetail = () => {
         <h1 className="text-3xl">{title}</h1>
         <div className="dis-sub">
           <h2>{companyName}</h2>
-          <h3 className="text-xs">공시 업데이트 : {updatedAt}</h3>
+          <h3 className="text-xs">공시 업데이트 : {relativeUpdatedAt}</h3>
         </div>
       </section>
 
       <section className="dis-summary">
         <div className="dis-tag">
           <div className="tag-wrapper">
-            <div className="emotion-tag positive">
+            <div className={`emotion-tag ${sentiment.type}`}>
               #{sentiment.label}
               <span className="tooltip-wrap" ref={wrapRef}>
                 <button
@@ -202,7 +287,7 @@ const DisclosureDetail = () => {
               className="dis-btn btn primary-bg white"
               type="button"
               onClick={() => {
-                // TODO: 원문 링크 열기 (웹뷰면 window.open 대신 RN 브릿지 고려)
+                if (!originalUrl) return;
                 window.open(originalUrl, "_blank", "noopener,noreferrer");
               }}
             >
@@ -216,13 +301,25 @@ const DisclosureDetail = () => {
         <h5>주의사항</h5>
         <ul className="dis-notice-list text-xs">
           <li className="dis-notice-item">
-            • 공시 요약 특화 어시스던트 AI가 산출한 결과입니다
+            • 본 요약은 공시 요약 특화 AI가 생성한 참고 정보입니다.
           </li>
           <li className="dis-notice-item">
-            • 이건 AI가 만든 공시고 판단 몫은 당신이 합니다
+            • 투자 판단 및 의사결정의 최종 책임은 이용자 본인에게 있습니다.
           </li>
           <li className="dis-notice-item">
-            • 너무 신뢰하지 말고 본인도 직접 원문을 살펴보세요
+            • 중요한 의사결정 전에는 반드시 공시 원문을 직접 확인하시기
+            바랍니다.
+          </li>
+          <li className="dis-notice-item">
+            • AI 요약 결과는 일부 정보가 축약되거나 해석이 포함될 수 있습니다.
+          </li>
+          <li className="dis-notice-item">
+            • 시장 상황 및 기업 공시는 수시로 변경될 수 있으니 최신 정보를
+            확인하세요.
+          </li>
+          <li className="dis-notice-item">
+            • 본 서비스는 투자 수익을 보장하지 않으며 참고용 정보 제공을
+            목적으로 합니다.
           </li>
         </ul>
       </section>
@@ -232,22 +329,30 @@ const DisclosureDetail = () => {
         role="button"
         tabIndex={0}
         onClick={() => {
-          // TODO: 챗봇/질문 페이지로 이동
-          // 예: navigate(`/chatbot?disclosureId=${id}`)
+          if (!isAuthenticated) {
+            setShowSignupPrompt(true);
+            return;
+          }
+
+          // TODO: 챗봇 페이지 이동
+          // navigate(`/chatbot?disclosureId=${disclosure.disclosureId}`)
         }}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
-            // 접근성: 키보드로도 클릭 가능하게
             e.preventDefault();
-            // TODO: 동일하게 이동 처리
           }
         }}
       >
         공시에 대해 궁금한 점이 있다면 물어보세요.
         <img src={sendIcon} alt="sendIcon" />
       </div>
+
+      <AuthPromptSheet
+        open={showSignupPrompt}
+        onClose={() => setShowSignupPrompt(false)}
+      />
     </div>
   );
-};
+}
 
 export default DisclosureDetail;

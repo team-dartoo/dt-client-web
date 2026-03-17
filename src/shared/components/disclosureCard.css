@@ -12,6 +12,12 @@
   box-shadow: 0 2px 8px 0 var(--gray2);
 }
 
+.meta-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .card-header {
   display: flex;
   padding: 20px 20px 10px 20px;
@@ -97,6 +103,13 @@
   border-radius: 20px;
 }
 
+/* .ai-summary-item {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+} */
+
 .card-footer {
   display: flex;
   height: 7vh;
@@ -144,4 +157,13 @@
 .sentiment-chip.negative {
   background: #f7e3e2;
   color: #963c3d;
+}
+
+.time-ago.days,
+.time-ago.recent {
+  color: var(--mainBlue);
+}
+
+.time-ago.date {
+  color: var(--subText);
 }

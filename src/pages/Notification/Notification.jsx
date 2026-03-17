@@ -1,3 +1,7 @@
+// api 목록
+// 사용자 설정 조회
+// 사용자 설정 수정
+
 import { React, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 

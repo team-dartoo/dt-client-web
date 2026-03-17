@@ -1,17 +1,10 @@
 // pages/Main/SearchResult.jsx
-import React, { useEffect, useState } from "react";
-import { useBookmark } from "../../../contexts/BookmarkContext";
+import React, { useEffect } from "react";
+import { useBookmark } from "../../../contexts/useBookmark";
 import { useNavigate } from "react-router-dom";
 import "../search.css";
 import { useRelativeTime } from "../../../shared/hooks/useRelativeTime";
-
-// 더미:
-const DUMMY_COMPANIES = [
-  { companyId: "035720", name: "카카오", date: "2025-01-12T13:20:00" },
-  { companyId: "293490", name: "카카오게임즈", date: "2025-01-12T09:05:00" },
-  { companyId: "323410", name: "카카오뱅크", date: "2025-01-11T23:10:00" },
-  { companyId: "005930", name: "삼성전자", date: "2026-03-02T18:40:00" },
-];
+import { useSearch } from "../../../contexts/useSearch";
 
 // 검색어 하이라이트
 function highlight(text, q) {
@@ -66,23 +59,20 @@ const StarOutline = () => (
 
 const SearchResult = ({ query }) => {
   const navigate = useNavigate();
-  const [list, setList] = useState([]);
-  const [bookmarkedIds, setBookmarkedIds] = useState(() => new Set()); // ✅ 임시(나중에 전역화)
+  const { isBookmarked, toggleBookmark } = useBookmark();
+  const { searchResults, searchLoading, searchCompanies, addSearchHistory } =
+    useSearch();
 
   useEffect(() => {
-    const term = query.trim().toLowerCase();
-    if (!term) return setList([]);
+    const trimmed = query.trim();
 
-    setList(DUMMY_COMPANIES.filter((c) => c.name.toLowerCase().includes(term)));
-  }, [query]);
+    if (!trimmed) {
+      searchCompanies("");
+      return;
+    }
 
-  const toggleBookmark = (companyId) => {
-    setBookmarkedIds((prev) => {
-      const next = new Set(prev);
-      next.has(companyId) ? next.delete(companyId) : next.add(companyId);
-      return next;
-    });
-  };
+    searchCompanies(trimmed);
+  }, [query, searchCompanies]);
 
   const RelativeTime = ({ date }) => {
     const { text, type } = useRelativeTime(date);
@@ -96,43 +86,49 @@ const SearchResult = ({ query }) => {
   return (
     <div className="SearchList">
       <ul className="result-list">
-        {list.map((item) => {
-          const isBookmarked = bookmarkedIds.has(item.companyId);
-
-          return (
-            <li
-              key={item.companyId}
-              className="result-item"
-              onClick={() => navigate(`/company/${item.companyId}`)}
-            >
-              <div className="result-left">
-                <p className="result-company text-lg">
-                  {highlight(item.name, query)}
-                </p>
-                <p className="result-date text-xs">
-                  공시 업데이트 : <RelativeTime date={item.date} />
-                </p>
-              </div>
-
-              <div className="result-right">
-                <button
-                  type="button"
-                  className="bookmark-btn"
-                  aria-label={isBookmarked ? "북마크 해제" : "북마크"}
-                  onClick={(e) => {
-                    e.stopPropagation(); // ✅ 별 클릭 시 상세로 이동 막기
-                    toggleBookmark(item.companyId);
-                  }}
-                >
-                  {isBookmarked ? <StarFilled /> : <StarOutline />}
-                </button>
-              </div>
-            </li>
-          );
-        })}
-
-        {list.length === 0 && (
+        {searchLoading ? (
+          <li className="result-empty text-base">검색 중...</li>
+        ) : searchResults.length === 0 ? (
           <li className="result-empty text-base">검색 결과가 없어요.</li>
+        ) : (
+          searchResults.map((item) => {
+            const bookmarked = isBookmarked(item.corpCode);
+
+            return (
+              <li
+                key={item.corpCode}
+                className="result-item"
+                onClick={async () => {
+                  await addSearchHistory(item.corpName);
+                  navigate(`/company/${item.corpCode}`);
+                }}
+              >
+                <div className="result-left">
+                  <p className="result-company text-lg">
+                    {highlight(item.corpName, query)}
+                  </p>
+                  <p className="result-date text-xs">
+                    공시 업데이트 :{" "}
+                    <RelativeTime date={item.latestDisclosureDate} />
+                  </p>
+                </div>
+
+                <div className="result-right">
+                  <button
+                    type="button"
+                    className="bookmark-btn"
+                    aria-label={bookmarked ? "북마크 해제" : "북마크"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleBookmark(item.corpCode, item.corpName);
+                    }}
+                  >
+                    {bookmarked ? <StarFilled /> : <StarOutline />}
+                  </button>
+                </div>
+              </li>
+            );
+          })
         )}
       </ul>
     </div>

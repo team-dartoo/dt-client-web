@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+
 import Header from "../../shared/components/Header";
 import arrowLeft from "@/images/arrow-left.svg";
 import "./signup.css";
@@ -21,10 +22,13 @@ const SignUp = () => {
     password.trim() &&
     confirmPassword.trim();
 
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/main";
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!isFormValid) return;
-    navigate("/main");
+    navigate(from, { replace: true });
   };
 
   return (

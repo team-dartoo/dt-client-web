@@ -2,29 +2,12 @@
 import React from "react";
 import "../search.css";
 import xIcon from "@/images/x_icon.svg";
-
-// 더미 데이터
-const recentKeywords = [
-  "삼성전자",
-  "LG전자",
-  "현대자동차",
-  "NAVER",
-  "KAKAO",
-  "SK하이닉스",
-  "포스코",
-  "셀트리온",
-  "한화솔루션",
-  "기아",
-  "두산",
-  "롯데케미칼",
-  "CJ제일제당",
-  "대한항공",
-  "한국전력",
-];
-
-const popularChips = ["삼성전자", "sk하이닉스", "카카오"];
+import { useSearch } from "../../../contexts/useSearch";
 
 const SearchHome = ({ onKeywordClick }) => {
+  const { popularChips, histories, removeSearchHistory, historyLoading } =
+    useSearch();
+
   return (
     <>
       <section className="popularKW">
@@ -46,16 +29,31 @@ const SearchHome = ({ onKeywordClick }) => {
       <section className="recentKW">
         <div className="recentKW-title">최근 기록</div>
         <div className="recentKW-list">
-          {recentKeywords.map((kw, index) => (
-            <div
-              key={index}
-              className="recentKW-item"
-              onClick={() => onKeywordClick(kw)}
-            >
-              <img src={xIcon} alt="delete" />
-              <p className="text-lg">{kw}</p>
+          {historyLoading ? (
+            <div className="recentKW-empty text-base">불러오는 중...</div>
+          ) : histories.length === 0 ? (
+            <div className="recentKW-empty text-base">
+              최근 검색 기록이 없어요.
             </div>
-          ))}
+          ) : (
+            histories.map((item) => (
+              <div
+                key={item.historyId}
+                className="recentKW-item"
+                onClick={() => onKeywordClick(item.query)}
+              >
+                <img
+                  src={xIcon}
+                  alt="delete"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeSearchHistory(item.historyId);
+                  }}
+                />
+                <p className="text-lg">{item.query}</p>
+              </div>
+            ))
+          )}
         </div>
       </section>
     </>

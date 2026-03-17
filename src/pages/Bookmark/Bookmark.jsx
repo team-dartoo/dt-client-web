@@ -1,40 +1,29 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./bookmark.css";
 import Alert from "../../shared/components/Alert";
 
 import { DndContext, closestCenter } from "@dnd-kit/core";
-// DndContext : 드래그 요소 상태 추적, 블럭 위치, 드래그 끝났는지 알려줌
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-// 가로로 이동 억제 위함
 import {
   SortableContext,
   useSortable,
   arrayMove,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-// SortableCOntext : active 아이템을 움직였을 때 리스트의 몇 번째 자리인지 판단, 배열 정렬해줌
-// useSortable : 개별 아이템을 드래그 가능한 객체로 변환
 import { CSS } from "@dnd-kit/utilities";
 
 import NavBar from "@/shared/components/Navbar";
 import Header from "@/shared/components/Header";
 import xIcon from "@/images/x_red_icon.svg";
 import moveIcon from "@/images/move_icon.svg";
-
-const initialCompanies = [
-  { id: "1", name: "삼성전자" },
-  { id: "2", name: "카카오" },
-  { id: "3", name: "sk하이닉스" },
-  { id: "4", name: "네이버" },
-];
+import { useBookmark } from "../../contexts/useBookmark";
 
 // 개별 아이템
 function SortableBookmarkItem({ company, index, onDelete, onClickCompany }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: company.id });
+    useSortable({ id: company.corpCode });
 
-  // 자연스러운 드래그 움직임
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -55,7 +44,7 @@ function SortableBookmarkItem({ company, index, onDelete, onClickCompany }) {
       className="bookmark-item"
       ref={setNodeRef}
       style={style}
-      {...attributes} // 루트에 attr
+      {...attributes}
     >
       <div className="bookmark-wrapper">
         <img
@@ -66,9 +55,10 @@ function SortableBookmarkItem({ company, index, onDelete, onClickCompany }) {
         />
 
         <p className="bookmark-company text-lg" onClick={handleCompanyClick}>
-          {index + 1}. {company.name}
+          {index + 1}. {company.corpName}
         </p>
       </div>
+
       <img
         className="bookmark-move-handle"
         src={moveIcon}
@@ -82,22 +72,31 @@ function SortableBookmarkItem({ company, index, onDelete, onClickCompany }) {
 
 const Bookmark = () => {
   const navigate = useNavigate();
-  const [companies, setCompanies] = useState(initialCompanies);
+
+  // context에서 북마크 목록/삭제 가져오기
+  const { bookmarks, removeBookmark, loading } = useBookmark();
+
+  // 드래그 순서는 로컬 state로 관리
+  const [companies, setCompanies] = useState([]);
 
   const [showAlert, setShowAlert] = useState(false);
   const [targetIndex, setTargetIndex] = useState(null);
 
+  // context 북마크 목록이 바뀌면 로컬 리스트 갱신
+  useEffect(() => {
+    setCompanies(bookmarks);
+  }, [bookmarks]);
+
   // 드래그 종료 시 순서 업데이트
   const handleDragEnd = (event) => {
     const { active, over } = event;
-    console.log("drag end:", { active, over });
     if (!over) return;
     if (active.id === over.id) return;
 
     setCompanies((prev) => {
-      const oldIndex = prev.findIndex((c) => c.id === active.id);
-      const newIndex = prev.findIndex((c) => c.id === over.id);
-      return arrayMove(prev, oldIndex, newIndex); // 배열 순서 변경
+      const oldIndex = prev.findIndex((c) => c.corpCode === active.id);
+      const newIndex = prev.findIndex((c) => c.corpCode === over.id);
+      return arrayMove(prev, oldIndex, newIndex);
     });
   };
 
@@ -106,10 +105,11 @@ const Bookmark = () => {
     setShowAlert(true);
   };
 
-  const handleConfirmDelete = () => {
-    // 삭제 처리
-    if (targetIndex === null) return;
-    setCompanies((prev) => prev.filter((_, i) => i !== targetIndex));
+  const handleConfirmDelete = async () => {
+    if (targetIndex === null || !companies[targetIndex]) return;
+    const targetcorpCode = companies[targetIndex].corpCode;
+    await removeBookmark(targetcorpCode);
+
     setShowAlert(false);
     setTargetIndex(null);
   };
@@ -121,7 +121,7 @@ const Bookmark = () => {
 
   const targetName =
     targetIndex !== null && companies[targetIndex]
-      ? companies[targetIndex].name
+      ? companies[targetIndex].corpName
       : "";
 
   return (
@@ -129,29 +129,40 @@ const Bookmark = () => {
       <NavBar />
       <Header title="관심 기업" />
 
-      <DndContext
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-        modifiers={[restrictToVerticalAxis]}
-      >
-        {/* 정렬 대상 id 배열 전달 */}
-        <SortableContext
-          items={companies.map((c) => c.id)}
-          strategy={verticalListSortingStrategy}
+      {loading ? (
+        <section className="bookmark-list">
+          <div className="bookmark-item">불러오는 중...</div>
+        </section>
+      ) : companies.length === 0 ? (
+        <section className="bookmark-list">
+          <div className="bookmark-item">관심 기업이 없습니다.</div>
+        </section>
+      ) : (
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+          modifiers={[restrictToVerticalAxis]}
         >
-          <section className="bookmark-list">
-            {companies.map((company, index) => (
-              <SortableBookmarkItem
-                key={company.id}
-                company={company}
-                index={index}
-                onDelete={() => handleClickDelete(index)}
-                onClickCompany={() => navigate(`/company/${company.id}`)}
-              />
-            ))}
-          </section>
-        </SortableContext>
-      </DndContext>
+          <SortableContext
+            items={companies.map((c) => c.corpCode)}
+            strategy={verticalListSortingStrategy}
+          >
+            <section className="bookmark-list">
+              {companies.map((company, index) => (
+                <SortableBookmarkItem
+                  key={company.corpCode}
+                  company={company}
+                  index={index}
+                  onDelete={() => handleClickDelete(index)}
+                  onClickCompany={() =>
+                    navigate(`/company/${company.corpCode}`)
+                  }
+                />
+              ))}
+            </section>
+          </SortableContext>
+        </DndContext>
+      )}
 
       {showAlert && (
         <Alert

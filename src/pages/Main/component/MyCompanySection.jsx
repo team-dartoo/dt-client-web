@@ -1,13 +1,14 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "./myCompanySection.css";
 import chevronDownIcon from "@/images/chevron_down_icon.svg";
 import chevronUpIcon from "@/images/chevron_up_icon.svg";
 
 import DisclosureCard from "../../../shared/components/DisclosureCard";
+import { useBookmark } from "../../../contexts/useBookmark";
+import { disclosureApi } from "../../../shared/api/disclosureApi";
 
 const CardSkeleton = () => (
   <div className="disclosure-card skeleton-card" aria-hidden="true">
-    {/* 헤더 */}
     <div className="card-header">
       <div className="card-header-left">
         <div className="sk sk-title sk-shimmer" />
@@ -17,12 +18,10 @@ const CardSkeleton = () => (
       </div>
     </div>
 
-    {/* 공시 정보 */}
     <div className="card-meta">
       <div className="sk sk-meta sk-shimmer" />
     </div>
 
-    {/* AI 요약 */}
     <div className="ai-summary-box">
       <div className="ai-summary-title">
         <div className="sk sk-ai-title sk-shimmer" />
@@ -35,47 +34,128 @@ const CardSkeleton = () => (
       </ul>
     </div>
 
-    {/* 하단 */}
     <div className="card-footer"></div>
   </div>
 );
 
-const MyCompanySection = ({
-  companies = [],
-  disclosures = [],
-  loading = false,
-  defaultExpanded = false,
-}) => {
+// const getRelativeTimeText = (dateString) => {
+//   if (!dateString) return "";
+
+//   const now = new Date();
+//   const target = new Date(dateString);
+//   const diff = now - target;
+
+//   const minute = 1000 * 60;
+//   const hour = minute * 60;
+//   const day = hour * 24;
+
+//   if (diff < hour) {
+//     const m = Math.max(1, Math.floor(diff / minute));
+//     return `${m}분 전`;
+//   }
+
+//   if (diff < day) {
+//     const h = Math.floor(diff / hour);
+//     return `${h}시간 전`;
+//   }
+
+//   const d = Math.floor(diff / day);
+//   return `${d}일 전`;
+// };
+
+const toSummaryLines = (text) => {
+  if (!text) return ["요약이 아직 없어요."];
+
+  const parts = text
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  if (parts.length >= 3) return parts.slice(0, 3);
+  return [text];
+};
+
+const dedupeDisclosures = (list) => {
+  return Array.from(new Map(list.map((item) => [item._id, item])).values());
+};
+
+const MyCompanySection = ({ defaultExpanded = false }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
-  const [selectedCompanyId, setSelectedCompanyId] = useState("ALL");
+  const [selectedCompanyCode, setSelectedCompanyCode] = useState("ALL");
 
-  const allChips = [{ companyId: "ALL", name: "전체" }, ...companies];
+  const { bookmarks, loading: bookmarkLoading } = useBookmark();
 
-  // 선택된 칩 기준으로 필터링
-  const filteredDisclosures = useMemo(() => {
-    // 기업 별로 묶는 함수
-    const groupByCompany = (list) => {
-      const map = {};
-      list.forEach((d) => {
-        const cid = d.company.companyId;
-        if (!map[cid]) map[cid] = [];
-        map[cid].push(d);
-      });
-      return map;
+  const [disclosures, setDisclosures] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const allChips = useMemo(() => {
+    return [{ corpCode: "ALL", corpName: "전체" }, ...bookmarks];
+  }, [bookmarks]);
+
+  const fetchCompanyDisclosures = async (bookmark) => {
+    const data = await disclosureApi.getDisclosures({
+      corpCode: bookmark.corpCode,
+      limit: 3,
+    });
+
+    return data.disclosures ?? [];
+  };
+
+  useEffect(() => {
+    let alive = true;
+
+    const fetchMyCompanyDisclosures = async () => {
+      if (bookmarks.length === 0) {
+        setDisclosures([]);
+        return;
+      }
+
+      try {
+        setLoading(true);
+
+        if (selectedCompanyCode === "ALL") {
+          const results = await Promise.all(
+            bookmarks.map((bookmark) => fetchCompanyDisclosures(bookmark)),
+          );
+
+          if (!alive) return;
+
+          const merged = results.flat();
+          setDisclosures(dedupeDisclosures(merged));
+          return;
+        }
+
+        const selectedBookmark = bookmarks.find(
+          (item) => item.corpCode === selectedCompanyCode,
+        );
+
+        if (!selectedBookmark) {
+          if (!alive) return;
+          setDisclosures([]);
+          return;
+        }
+
+        const result = await fetchCompanyDisclosures(selectedBookmark);
+
+        if (!alive) return;
+        setDisclosures(dedupeDisclosures(result));
+      } catch (err) {
+        console.error("내가 찜한 기업 공시 조회 실패:", err);
+        if (!alive) return;
+        setDisclosures([]);
+      } finally {
+        if (alive) setLoading(false);
+      }
     };
 
-    if (selectedCompanyId === "ALL") {
-      const grouped = groupByCompany(disclosures);
+    fetchMyCompanyDisclosures();
 
-      return Object.values(grouped).flatMap((companyDisclosures) =>
-        companyDisclosures.slice(0, 3),
-      );
-    }
-    // 특정 기업 선택 시: 해당 기업만 3개
-    return disclosures
-      .filter((d) => d.company.companyId === selectedCompanyId)
-      .slice(0, 3);
-  }, [selectedCompanyId, disclosures]);
+    return () => {
+      alive = false;
+    };
+  }, [bookmarks, selectedCompanyCode]);
+
+  const isSectionLoading = loading || bookmarkLoading;
 
   return (
     <div className="my-company-section">
@@ -97,40 +177,43 @@ const MyCompanySection = ({
       <div className={`my-company-list ${expanded ? "expanded" : "collapsed"}`}>
         {allChips.map((c) => (
           <button
-            key={c.companyId}
-            className={`chip ${selectedCompanyId === c.companyId ? "active" : ""}`}
-            onClick={() => setSelectedCompanyId(c.companyId)}
+            key={c.corpCode}
+            className={`chip ${selectedCompanyCode === c.corpCode ? "active" : ""}`}
+            onClick={() => setSelectedCompanyCode(c.corpCode)}
+            disabled={isSectionLoading}
           >
-            {c.name}
+            {c.corpName}
           </button>
         ))}
       </div>
 
       <div className="card-wrapper">
-        {loading ? (
+        {isSectionLoading ? (
           <>
             <CardSkeleton />
             <CardSkeleton />
             <CardSkeleton />
           </>
-        ) : filteredDisclosures.length === 0 ? (
+        ) : bookmarks.length === 0 ? (
+          <div className="empty-state text-base">찜한 기업이 없습니다.</div>
+        ) : disclosures.length === 0 ? (
           <div className="empty-state text-base">
             선택한 기업의 공시가 없습니다.
           </div>
         ) : (
-          filteredDisclosures.map((item) => (
+          disclosures.map((item) => (
             <DisclosureCard
-              key={item.disclosureId}
-              companyId={item.company.companyId}
-              companyName={item.company.name}
-              companyCode={item.company.code}
-              disclosureId={item.disclosureId}
-              title={item.title}
-              timeAgo={item.timeAgo}
-              isNew={item.isNew}
-              sentiment={item.sentiment}
-              summaryStatus={item.summary?.status ?? "loading"}
-              summaryLines={item.summary?.lines ?? []}
+              key={item._id}
+              companyId={item.company.corpCode}
+              companyName={item.company.corpName}
+              companyCode={item.company.stockCode}
+              disclosureId={item._id}
+              title={item.reportName}
+              dateTime={item.updatedAt || item.receptionDate}
+              isNew={Boolean(item.remark)}
+              sentiment="neutral"
+              summaryStatus="success"
+              summaryLines={toSummaryLines(item.summary?.data?.text)}
             />
           ))
         )}

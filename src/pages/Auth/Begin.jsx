@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import beginTitle from "@/images/begin_title.png";
 import kakao from "@/images/kakao_icon.svg";
@@ -7,6 +8,15 @@ import naver from "@/images/naver_icon.svg";
 import "./begin.css";
 
 const Begin = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleGoLogin = () => {
+    navigate("/login", {
+      state: { from: location.state?.from },
+    });
+  };
+
   return (
     <div className="begin page">
       <div className="title-wrapper">
@@ -14,9 +24,12 @@ const Begin = () => {
       </div>
 
       <div className="btn-wrapper">
-        <Link className="btn loginBtn primary-bg white" to="/login">
+        <button
+          className="btn loginBtn primary-bg white"
+          onClick={handleGoLogin}
+        >
           이메일 로그인
-        </Link>
+        </button>
         <div className="social-login-wrapper">
           <Link className="loginBtnCircle kakao" to="*">
             <img src={kakao} alt="kakao_icon" />

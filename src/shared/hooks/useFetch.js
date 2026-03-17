@@ -4,7 +4,7 @@
 // 공시 목록, 검색 결과, 기업 및 공시 상세 페이지
 
 // const { data, loading } = useFetch(
-//   `/api/disclosures/company?corpId=${corpId}`
+//   `/api/disclosures/company?corpCode=${corpCode}`
 // );
 
 import { useEffect, useState } from "react";

@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import "./disclosureCard.css";
 import chevronRight from "@/images/chevron-right.svg";
+import { useRelativeTime } from "../hooks/useRelativeTime";
 
 const DisclosureCard = ({
   companyId,
@@ -9,13 +10,14 @@ const DisclosureCard = ({
   companyCode,
   disclosureId,
   title,
-  timeAgo,
+  dateTime,
   isNew,
   sentiment, // "positive" | "neutral" | "negative"
-  summaryStatus, // "loading" | "success"  (에러도 loading으로 처리)
+  summaryStatus, // "loading" | "success"
   summaryLines = [],
 }) => {
   const navigate = useNavigate();
+  const { text, type } = useRelativeTime(dateTime);
 
   return (
     <div className="disclosure-card">
@@ -23,7 +25,7 @@ const DisclosureCard = ({
       <div className="card-header">
         <div className="card-header-left">
           <span
-            className="company-name text-2xl"
+            className="company-name text-xl"
             onClick={() => navigate(`/company/${companyId}`)}
           >
             {companyName}
@@ -33,7 +35,7 @@ const DisclosureCard = ({
 
         <div className="card-header-right">
           {isNew && <span className="new-badge">new</span>}
-          <span className="time-ago">{timeAgo}</span>
+          <span className={`time-ago ${type}`}>{text}</span>
         </div>
       </div>
 
@@ -64,13 +66,16 @@ const DisclosureCard = ({
 
       {/* 하단 */}
       <div className="card-footer">
-        <div
+        <button
           className="detail-link"
-          onClick={() => navigate(`/disclosure/${disclosureId}`)}
+          onClick={() => {
+            if (!disclosureId) return;
+            navigate(`/disclosure/${disclosureId}`);
+          }}
         >
           <span className="detail-text text-base">자세히 보기</span>
           <img src={chevronRight} alt="detail-link" />
-        </div>
+        </button>
 
         <span className={`sentiment-chip ${sentiment}`}>
           {sentiment === "positive"

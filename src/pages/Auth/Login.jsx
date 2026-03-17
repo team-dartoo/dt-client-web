@@ -1,30 +1,42 @@
 import React, { useState } from "react";
 import Header from "../../shared/components/Header";
 import arrowLeft from "@/images/arrow-left.svg";
-import { useNavigate } from "react-router-dom";
-import "./login.css";
-import Loading from "../../shared/components/Loading";
+import { useNavigate, useLocation } from "react-router-dom";
 
+import "./login.css";
+import { useAuth } from "../../contexts/useAuth";
+import Loading from "../../shared/components/Loading";
 import { useToast } from "../../contexts/ToastContext";
 
-// 토스트 띄우는 알고리즘 순서 : 로그인 아이디 존재 여부 - 비밀번호 일치 여부
-
 const Login = () => {
+  const { login, loading } = useAuth();
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   // 입력 값 state
-  const [userName, setUserName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const isFormValid = userName.trim() && password.trim();
+  const isFormValid = email.trim() && password.trim();
 
-  const handleSubmit = (e) => {
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/main";
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isFormValid) return;
-    navigate("/main");
+
+    try {
+      const data = await login(email, password);
+      navigate(from, { replace: true });
+    } catch (err) {
+      showToast(err.message || "로그인 중 문제가 발생했습니다");
+    }
   };
 
-  const { showToast } = useToast();
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div className="login page">
@@ -40,15 +52,14 @@ const Login = () => {
       <div className="login-form">
         <form onSubmit={handleSubmit}>
           <div className="field">
-            <label htmlFor="userName">닉네임</label>
+            <label htmlFor="email">이메일</label>
             <p>
               <input
-                type="text"
-                id="userName"
-                placeholder="닉네임을 입력하세요"
-                value={userName}
-                maxLength={8}
-                onChange={(e) => setUserName(e.target.value)}
+                type="email"
+                id="email"
+                placeholder="이메일을 입력하세요"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </p>
           </div>
@@ -71,20 +82,10 @@ const Login = () => {
             className={`btn bottom white ${
               isFormValid ? "primary-bg" : "gray3-bg"
             }`}
-            value="로그인"
-            disabled={!isFormValid}
+            value={loading ? "로그인 중..." : "로그인"}
+            disabled={!isFormValid || loading}
           />
         </form>
-
-        <h4>로딩 동작 테스트 버튼 </h4>
-        {/* <Loading /> */}
-        <button onClick={() => showToast("로그인 성공!", "success")}>
-          토스트 띄우기 - 성공
-        </button>
-        <br />
-        <button onClick={() => showToast("로그인 실패", "error")}>
-          토스트 띄우기 - 실패
-        </button>
       </div>
     </div>
   );

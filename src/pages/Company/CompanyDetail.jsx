@@ -1,4 +1,8 @@
-// 렌더링 데이터 수정하기
+// api 목록
+// 기업 북마크 추가 *
+// 기업 북마크 해제 *
+// 기업 상세 조회
+// 공시 목록 조회
 
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -8,6 +12,8 @@ import "./companyDetail.css";
 import DisclosureCard from "../../shared/components/DisclosureCard";
 import Alert from "../../shared/components/Alert";
 import Loading from "../../shared/components/Loading";
+import { useBookmark } from "../../contexts/useBookmark";
+import { disclosureApi } from "../../shared/api/disclosureApi";
 
 const StarFilled = () => (
   <svg
@@ -26,6 +32,7 @@ const StarFilled = () => (
     />
   </svg>
 );
+
 const StarOutline = () => (
   <svg
     width="30"
@@ -37,35 +44,26 @@ const StarOutline = () => (
     <path
       d="M15 2.5L18.8625 10.325L27.5 11.5875L21.25 17.675L22.725 26.275L15 22.2125L7.275 26.275L8.75 17.675L2.5 11.5875L11.1375 10.325L15 2.5Z"
       stroke="white"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
 
 const CompanyDetail = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { corpCode } = useParams();
 
-  const [activeTab, setActiveTab] = useState("DISCLOSURE"); // DISCLOSURE | FINANCE | NEWS
+  const [activeTab, setActiveTab] = useState("DISCLOSURE");
   const [showAlert, setShowAlert] = useState(false);
 
-  // ✅ 북마크 상태(임시: 나중에 전역 상태/서버로 교체)
-  const [isBookmarked, setIsBookmarked] = useState(false);
+  const { isBookmarked, toggleBookmark } = useBookmark();
 
-  const handleToggleBookmark = () => {
-    // TODO: 전역 북마크/서버 연동 시 여기만 교체
-    // 예) await api.post(`/bookmarks/toggle`, { companyId: id })
-    setIsBookmarked((v) => !v);
-  };
-
-  //데이터/로딩/에러
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(false);
 
-  // 재무, 뉴스 클릭 시 처리
   const handleClickTab = (tab) => {
     setActiveTab(tab);
     if (tab !== "DISCLOSURE") setShowAlert(true);
@@ -73,60 +71,69 @@ const CompanyDetail = () => {
 
   const handleConfirmUnsupported = () => {
     setShowAlert(false);
-    setActiveTab("DISCLOSURE"); // 확인 누르면 공시로 복귀
+    setActiveTab("DISCLOSURE");
   };
 
   const handleCloseAlert = () => {
     setShowAlert(false);
-    setActiveTab("DISCLOSURE"); // 닫아도 공시로 복귀
+    setActiveTab("DISCLOSURE");
   };
+
   useEffect(() => {
     let alive = true;
 
     const fetchCompanyDetail = async () => {
       try {
         setLoading(true);
-        setError(null);
+        setError(false);
 
-        // TODO: 백엔드 연동 시 교체
-        // 예) const res = await api.get(`/companies/${id}`);
-        //     if (!alive) return;
-        //     setCompany(res.data);
-
-        const mock = {
-          id,
-          name: "삼성전자",
-          ticker: "005930",
-          price: "75,000원",
-          changeText: "▲ 1,200원 (+ 1.63%)",
-          disclosures: [{ id: "1" }, { id: "2" }],
-        };
+        const res = await disclosureApi.getCompanyDetail(corpCode);
 
         if (!alive) return;
-        setCompany(mock);
+        setCompany(res);
       } catch (e) {
         if (!alive) return;
+        console.error("기업 상세 조회 실패:", e);
         setError(true);
       } finally {
         if (alive) setLoading(false);
       }
     };
 
-    fetchCompanyDetail();
+    if (corpCode) {
+      fetchCompanyDetail();
+    }
 
     return () => {
       alive = false;
     };
-  }, [id]);
+  }, [corpCode]);
 
-  // 로딩/에러
-  if (loading || error || !company) {
+  if (loading) {
     return (
       <div className="CompanyDetail page">
         <Loading />
       </div>
     );
   }
+
+  if (error || !company) {
+    return (
+      <div className="CompanyDetail page">
+        <Header
+          title="기업상세"
+          left={
+            <button onClick={() => navigate(-1)}>
+              <img src={xIcon} alt="backIcon" />
+            </button>
+          }
+        />
+        <div className="content-box">기업 정보를 불러오지 못했어요.</div>
+      </div>
+    );
+  }
+
+  const bookmarked = isBookmarked(company.corpCode);
 
   return (
     <div className="CompanyDetail">
@@ -141,23 +148,25 @@ const CompanyDetail = () => {
           <button
             type="button"
             className="bookmark-btn"
-            aria-label={isBookmarked ? "북마크 해제" : "북마크"}
-            onClick={handleToggleBookmark}
+            aria-label={bookmarked ? "북마크 해제" : "북마크"}
+            onClick={() => toggleBookmark(company.corpCode, company.corpName)}
           >
-            {isBookmarked ? <StarFilled /> : <StarOutline />}
+            {bookmarked ? <StarFilled /> : <StarOutline />}
           </button>
         }
       />
 
       <section className="company-header">
         <div className="company-left">
-          <h1 className="text-3xl">{company.name}</h1>
-          <p className="text-sm">{company.ticker}</p>
+          <h1 className="text-3xl">{company.corpName}</h1>
+          <p className="text-sm">{company.stockCode}</p>
         </div>
 
         <div className="company-right">
-          <h1>{company.price}</h1>
-          <p className="text-sm">{company.changeText}</p>
+          <h1>공시 {company.disclosureCount}건</h1>
+          <p className="text-sm">
+            최근 공시일 {company.latestDisclosureDate.slice(0, 10)}
+          </p>
         </div>
       </section>
 
@@ -190,25 +199,31 @@ const CompanyDetail = () => {
 
         <div className="content-box">
           {activeTab === "DISCLOSURE" &&
-            company.disclosures.map((d) => (
-              <DisclosureCard
-                key={d.id}
-                companyId={company.id}
-                companyName={company.name}
-                companyCode={company.ticker}
-                disclosureId={d.id}
-                title="2024년 4분기 실적 공시"
-                timeAgo="3시간 전"
-                isNew
-                sentiment="positive"
-                summaryStatus="success"
-                summaryLines={[
-                  "매출 75조원으로 전년 대비 8% 증가",
-                  "메모리 반도체 부문 흑자 전환",
-                  "1분기 실적도 개선 전망",
-                ]}
-              />
-            ))}
+            company.disclosures?.items?.map((disclosure) => {
+              const isNew =
+                new Date() - new Date(disclosure.updatedAt) <
+                1000 * 60 * 60 * 24;
+
+              return (
+                <DisclosureCard
+                  key={disclosure._id}
+                  companyId={company.corpCode}
+                  companyName={company.corpName}
+                  companyCode={company.stockCode}
+                  disclosureId={disclosure._id}
+                  title={disclosure.reportName}
+                  dateTime={disclosure.updatedAt || disclosure.receptionDate}
+                  isNew={isNew}
+                  sentiment={disclosure.sentimentTag}
+                  summaryStatus="success"
+                  summaryLines={
+                    disclosure.summary?.text
+                      ? [disclosure.summary.text]
+                      : ["요약이 아직 없어요."]
+                  }
+                />
+              );
+            })}
         </div>
       </section>
 

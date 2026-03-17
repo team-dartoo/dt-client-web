@@ -1,3 +1,10 @@
+// api 목록
+// 사용자 동의 정보 조회
+// 프로필 업데이트
+// 비밀번호 변경
+// 로그아웃
+// 회원 탈퇴
+
 import React from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
