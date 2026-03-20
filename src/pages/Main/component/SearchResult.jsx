@@ -60,14 +60,13 @@ const StarOutline = () => (
 const SearchResult = ({ query }) => {
   const navigate = useNavigate();
   const { isBookmarked, toggleBookmark } = useBookmark();
-  const { searchResults, searchLoading, searchCompanies, addSearchHistory } =
-    useSearch();
+  const { searchResults, searchLoading, searchCompanies } = useSearch();
 
   useEffect(() => {
     const trimmed = query.trim();
 
     if (!trimmed) {
-      searchCompanies("");
+      searchCompanies("", { saveHistory: false });
       return;
     }
 
@@ -98,8 +97,7 @@ const SearchResult = ({ query }) => {
               <li
                 key={item.corpCode}
                 className="result-item"
-                onClick={async () => {
-                  await addSearchHistory(item.corpName);
+                onClick={() => {
                   navigate(`/company/${item.corpCode}`);
                 }}
               >

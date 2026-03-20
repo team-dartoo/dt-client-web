@@ -15,13 +15,21 @@ import MyCompanySection from "./component/MyCompanySection.jsx";
 import PremiumAd from "./component/PremiumAd.jsx";
 
 import { useDisclosure } from "../../contexts/useDisclosure.js";
+import { useUser } from "../../contexts/useUser";
 
 import "./main.css";
 
 const Main = () => {
   const navigate = useNavigate();
 
-  const { disclosures, loading, fetchDisclosures } = useDisclosure();
+  const {
+    disclosures,
+    loading: disclosureLoading,
+    fetchDisclosures,
+  } = useDisclosure();
+  const { planInfo, loading: userLoading } = useUser();
+
+  const isPremium = planInfo?.plan === "PREMIUM";
 
   useEffect(() => {
     // 오늘의 공시용: 최근 3개
@@ -42,14 +50,14 @@ const Main = () => {
       <Header title={<img src={dartooLogo} alt="dartoo" />} />
       <SearchBar />
 
-      <PremiumAd />
+      {!userLoading && !isPremium && <PremiumAd />}
 
       {/* 오늘의 공시 */}
       <div className="today-section">
         <div className="today-title text-xl">오늘의 공시</div>
 
         <div className="today-list">
-          {loading ? (
+          {disclosureLoading ? (
             <>
               <TodayDisclosureSkeleton />
               <TodayDisclosureSkeleton />

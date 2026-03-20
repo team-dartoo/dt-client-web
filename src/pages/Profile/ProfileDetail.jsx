@@ -5,60 +5,49 @@
 // 로그아웃
 // 회원 탈퇴
 
-import React from "react";
-import { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useRef } from "react";
 import Header from "../../shared/components/Header";
 import arrowLeft from "@/images/arrow-left.svg";
 import editIcon from "@/images/edit_icon.svg";
+import { useUser } from "../../contexts/useUser";
+import { useAuth } from "../../contexts/useAuth";
+import Loading from "../../shared/components/Loading";
+
 import "./profileDetail.css";
 
 const ProfileDetail = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
-  const [savedName, setSavedName] = useState("닉네임8글자제한");
-  const [userName, setUserName] = useState(savedName);
+  const { profile, planInfo, loading, updateProfile } = useUser();
 
+  const [userName, setUserName] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef(null);
 
+  if (loading || !profile) {
+    return <Loading />;
+  }
+
   const handleToggle = () => {
-    // 편집모드가 아니면 → 편집 시작
+    // 편집모드가 아니면 편집 시작
     if (!isEditing) {
+      setUserName(profile.nickname);
       setIsEditing(true);
-      setTimeout(() => inputRef.current?.focus(), 0); // 포커스 주기
-    } else {
-      // 편집모드 중 다시 클릭하면 → 저장 시도
-      handleSubmit();
-    }
+      setTimeout(() => inputRef.current?.focus(), 0);
+    } // 편집모드 중 다시 클릭하면 → 저장 시도
+    handleSubmit();
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     if (e) e.preventDefault();
 
     const trimmed = userName.trim();
+    if (!trimmed) return;
 
-    // 검증
-    if (trimmed.length === 0) {
-      alert("닉네임을 입력해주세요!");
-      return;
-    }
-    if (trimmed.length > 8) {
-      alert("닉네임은 8자 이하로 입력해주세요!");
-      return;
-    }
-
-    setSavedName(trimmed);
+    await updateProfile(trimmed);
     setIsEditing(false);
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Escape") {
-      // ESC → 취소
-      setUserName(savedName);
-      setIsEditing(false);
-    }
   };
 
   return (
@@ -76,52 +65,39 @@ const ProfileDetail = () => {
         <div className="my-info-item">
           <h6 className="my-info-name text-xl">닉네임</h6>
 
-          {/* 보기 모드 */}
-
           <div className="nickname-edit" onClick={handleToggle}>
-            <p className="my-info-sub">{savedName}</p>
+            <p className="my-info-sub">{profile.nickname}</p>
             <img src={editIcon} alt="edit" />
           </div>
 
-          {/* 편집 모드 */}
           {isEditing && (
             <form onSubmit={handleSubmit}>
-              <div className="field">
-                <p>
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    id="userName"
-                    placeholder="닉네임을 입력하세요"
-                    value={userName}
-                    onChange={(e) => setUserName(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    maxLength={8}
-                  />
-                </p>
-              </div>
+              <input
+                ref={inputRef}
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                maxLength={8}
+              />
             </form>
           )}
         </div>
 
         <div className="my-info-item">
           <h6 className="my-info-name text-xl">이메일</h6>
-          <p className="my-info-sub">dartwo123456@gmail.com</p>
+          <p className="my-info-sub">{profile.userEmail}</p>
         </div>
-        <div className="my-info-item">
-          <h6 className="my-info-name text-xl">비밀번호</h6>
-          <p className="my-info-sub">비밀번호 변경</p>
-        </div>
+
         <div className="my-info-item">
           <h6 className="my-info-name text-xl">구독 정보</h6>
-          <p className="my-info-sub">프리미엄 회원 (2025.10.16 갱신 예정)</p>
+          <p className="my-info-sub">
+            {planInfo?.plan} ({planInfo?.plan_expire_at})
+          </p>
         </div>
-        <div className="my-info-item">
-          <h6 className="my-info-name text-xl">버전</h6>
-          <p className="my-info-sub">1.0.0</p>
-        </div>
+
         <div>
-          <p className="logout">로그아웃</p>
+          <p className="logout" onClick={logout}>
+            로그아웃
+          </p>
         </div>
       </section>
     </div>

@@ -28,7 +28,7 @@ export default function SearchProvider({ children }) {
 
   const addSearchHistory = useCallback(async (query) => {
     const trimmed = query.trim();
-    if (!trimmed) return;
+    if (!trimmed) return null;
 
     try {
       const newItem = await searchApi.addSearchHistory(trimmed);
@@ -37,8 +37,11 @@ export default function SearchProvider({ children }) {
         const next = prev.filter((item) => item.query !== trimmed);
         return [newItem, ...next];
       });
+
+      return newItem;
     } catch (error) {
       console.error("검색 기록 추가 실패:", error);
+      return null;
     }
   }, []);
 
@@ -53,30 +56,39 @@ export default function SearchProvider({ children }) {
     }
   }, []);
 
-  const searchCompanies = useCallback(async (query) => {
-    const trimmed = query.trim();
-    setSearchQuery(trimmed);
+  const searchCompanies = useCallback(
+    async (query, options = {}) => {
+      const trimmed = query.trim();
+      const { saveHistory = true } = options;
 
-    if (!trimmed) {
-      setSearchResults([]);
-      return [];
-    }
+      setSearchQuery(trimmed);
 
-    try {
-      setSearchLoading(true);
+      if (!trimmed) {
+        setSearchResults([]);
+        return [];
+      }
 
-      const res = await searchApi.searchCompanies(trimmed);
-      setSearchResults(res.results || []);
+      try {
+        setSearchLoading(true);
 
-      return res.results || [];
-    } catch (error) {
-      console.error("기업 검색 실패:", error);
-      setSearchResults([]);
-      return [];
-    } finally {
-      setSearchLoading(false);
-    }
-  }, []);
+        if (saveHistory) {
+          await addSearchHistory(trimmed);
+        }
+
+        const res = await searchApi.searchCompanies(trimmed);
+        setSearchResults(res.results || []);
+
+        return res.results || [];
+      } catch (error) {
+        console.error("기업 검색 실패:", error);
+        setSearchResults([]);
+        return [];
+      } finally {
+        setSearchLoading(false);
+      }
+    },
+    [addSearchHistory],
+  );
 
   const clearSearchResults = useCallback(() => {
     setSearchResults([]);

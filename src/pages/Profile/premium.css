@@ -49,6 +49,10 @@
   font-weight: 700;
 }
 
+.p-state.black {
+  color: var(--subText);
+}
+
 .p-des {
   margin-top: 10px;
   font-weight: 500;

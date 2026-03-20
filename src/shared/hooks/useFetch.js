@@ -1,7 +1,6 @@
 // useFetch.js
 
-// 페이지 조회용으로만 사용, 페이지 조회용에만 사용
-// 공시 목록, 검색 결과, 기업 및 공시 상세 페이지
+// 아직 안 쓰는 중
 
 // const { data, loading } = useFetch(
 //   `/api/disclosures/company?corpCode=${corpCode}`
@@ -9,7 +8,7 @@
 
 import { useEffect, useState } from "react";
 
-const API_BASE_URL = "(url)";
+const API_BASE_URL = import.meta.env.API_BASE_URL;
 
 export const useFetch = (endpoint) => {
   const [data, setData] = useState(null);

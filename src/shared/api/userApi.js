@@ -9,7 +9,7 @@ const USE_MOCK = true;
 // 가상 유저 1명
 let mockUserProfile = {
   userEmail: "example@gmail.com",
-  nickname: "example",
+  nickname: "예시임시닉네임",
   plan: "FREE",
 };
 
@@ -65,7 +65,7 @@ export const userApi = {
           } catch (err) {
             reject(err);
           }
-        }, 300);
+        }, 0);
       });
     }
 
@@ -516,7 +516,7 @@ export const userApi = {
           } catch (err) {
             reject(err);
           }
-        }, 300);
+        }, 1);
       });
     }
 

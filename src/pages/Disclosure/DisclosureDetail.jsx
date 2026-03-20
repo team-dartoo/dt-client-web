@@ -30,6 +30,7 @@ const toSummaryLines = (text) => {
   return [text];
 };
 
+// 임시
 const getSentimentInfo = (tags = []) => {
   if (tags.includes("유상증자")) {
     return {
