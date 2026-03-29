@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { useNotification } from "@/contexts/NotificationContext";
+import { useNotification } from "@/contexts/useNotification";
 
 import bellIcon from "@/images/nav_bell_icon.svg";
 import bookmarkIcon from "@/images/nav_bookmark_icon.svg";
@@ -8,7 +8,9 @@ import userIcon from "@/images/nav_user_icon.svg";
 import "./navbar.css";
 
 export default function Navbar() {
-  const { hasUnread } = useNotification();
+  const { unreadCount } = useNotification();
+
+  const hasUnread = unreadCount > 0;
 
   const linkCls = ({ isActive }) => "nav-item" + (isActive ? " active" : "");
 

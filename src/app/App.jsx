@@ -5,7 +5,7 @@ import PcApp from "./PcApp";
 import "./../shared/styles/common.css";
 
 import { ToastProvider } from "../contexts/ToastContext";
-import { NotificationProvider } from "../contexts/NotificationContext";
+import { NotificationProvider } from "../contexts/NotificationProvider";
 import { BookmarkProvider } from "../contexts/BookmarkProvider";
 import { DisclosureProvider } from "../contexts/DisclosureProvider";
 import SearchProvider from "../contexts/SearchProvider";
@@ -17,8 +17,8 @@ export default function App() {
 
   return (
     <ToastProvider>
-      <NotificationProvider>
-        <AuthProvider>
+      <AuthProvider>
+        <NotificationProvider>
           <UserProvider>
             <SearchProvider>
               <DisclosureProvider>
@@ -28,8 +28,8 @@ export default function App() {
               </DisclosureProvider>
             </SearchProvider>
           </UserProvider>
-        </AuthProvider>
-      </NotificationProvider>
+        </NotificationProvider>
+      </AuthProvider>
     </ToastProvider>
   );
 }

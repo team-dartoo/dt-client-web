@@ -17,7 +17,7 @@ const Profile = () => {
   const isPremium = planInfo.plan === "PREMIUM";
 
   return (
-    <div className="Profile page">
+    <div className="profile page">
       <NavBar />
       <Header title="내 정보" />
 

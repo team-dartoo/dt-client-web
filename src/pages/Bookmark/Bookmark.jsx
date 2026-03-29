@@ -125,7 +125,7 @@ const Bookmark = () => {
       : "";
 
   return (
-    <div className="BookMark page">
+    <div className="Bookmark page">
       <NavBar />
       <Header title="관심 기업" />
 

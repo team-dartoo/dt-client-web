@@ -1,3 +1,7 @@
+.bookmark {
+  padding-bottom: 70px;
+}
+
 .bookmark-list {
   display: flex;
   margin: 10px;

@@ -185,6 +185,7 @@ h6 {
 .page {
   position: relative;
   min-height: 100dvh;
+  min-height: 100vh;
   padding-top: var(--header-height);
 }
 
@@ -254,19 +255,23 @@ h6 {
 }
 
 /* Button */
-
 .btn {
+  width: 80vw;
   width: 80dvw;
+
+  height: calc(80vw * 0.16);
   height: calc(80dvw * 0.16);
+
   max-height: 54px;
   flex-shrink: 0;
   border-radius: 40px;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(var(--default-fz) * 1.1429); /* 16px */
+  font-size: calc(var(--default-fz) * 1.1429);
   font-weight: 800;
   gap: 20px;
+  box-sizing: border-box;
 }
 
 .btn.bottom {

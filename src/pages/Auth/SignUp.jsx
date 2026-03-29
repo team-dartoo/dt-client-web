@@ -3,14 +3,17 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 import Header from "../../shared/components/Header";
 import arrowLeft from "@/images/arrow-left.svg";
-import "./signup.css";
+import { useToast } from "../../contexts/ToastContext";
+import { useAuth } from "../../contexts/useAuth";
 
-// 토스트 띄우는 알고리즘 순서 : 로그인 아이디 존재 여부 - 비밀번호 일치 여부
+import "./signup.css";
 
 const SignUp = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { showToast } = useToast();
+  const { signup, checkExist, loading } = useAuth();
 
-  // 입력 값 state
   const [userName, setUserName] = useState("");
   const [userEmail, setUserEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,13 +25,44 @@ const SignUp = () => {
     password.trim() &&
     confirmPassword.trim();
 
-  const location = useLocation();
   const from = location.state?.from?.pathname || "/main";
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isFormValid) return;
-    navigate(from, { replace: true });
+
+    const trimmedName = userName.trim();
+    const trimmedEmail = userEmail.trim();
+
+    if (trimmedName.length > 8) {
+      showToast("닉네임은 8자 이하로 입력해주세요.", "error");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      showToast("비밀번호가 일치하지 않습니다.", "error");
+      return;
+    }
+
+    try {
+      const exists = await checkExist(trimmedEmail);
+
+      if (exists) {
+        showToast("이미 가입된 이메일입니다.", "error");
+        return;
+      }
+
+      await signup(trimmedEmail, password, trimmedName);
+
+      showToast("회원가입이 완료되었습니다. 로그인해주세요.", "success");
+
+      navigate("/login", {
+        replace: true,
+        state: { from: location.state?.from || { pathname: from } },
+      });
+    } catch (err) {
+      showToast(err.message || "회원가입에 실패했습니다.", "error");
+    }
   };
 
   return (
@@ -41,6 +75,7 @@ const SignUp = () => {
         }
         title="회원가입"
       />
+
       <div className="signup-form">
         <form onSubmit={handleSubmit}>
           <div className="field">
@@ -51,15 +86,17 @@ const SignUp = () => {
                 id="userName"
                 placeholder="닉네임을 입력하세요"
                 value={userName}
+                maxLength={8}
                 onChange={(e) => setUserName(e.target.value)}
               />
             </p>
           </div>
+
           <div className="field">
             <label htmlFor="userEmail">이메일</label>
             <p>
               <input
-                type="text"
+                type="email"
                 id="userEmail"
                 placeholder="이메일을 입력하세요"
                 value={userEmail}
@@ -67,6 +104,7 @@ const SignUp = () => {
               />
             </p>
           </div>
+
           <div className="field">
             <label htmlFor="password">비밀번호</label>
             <p>
@@ -79,6 +117,7 @@ const SignUp = () => {
               />
             </p>
           </div>
+
           <div className="field">
             <label htmlFor="confirmPassword">비밀번호 확인</label>
             <p>
@@ -91,13 +130,14 @@ const SignUp = () => {
               />
             </p>
           </div>
+
           <input
             type="submit"
             className={`btn bottom white ${
               isFormValid ? "primary-bg" : "gray3-bg"
             }`}
-            value="회원가입"
-            disabled={!isFormValid}
+            value={loading ? "가입 중..." : "회원가입"}
+            disabled={!isFormValid || loading}
           />
         </form>
       </div>

@@ -10,12 +10,16 @@
   border-top: 5px solid var(--mainBlue);
   background: white;
   box-shadow: 0 2px 8px 0 var(--gray2);
+  overflow: hidden;
 }
 
 .meta-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .card-header {
@@ -30,6 +34,8 @@
   display: flex;
   align-items: baseline;
   gap: 5px;
+  min-width: 0;
+  flex: 1;
 }
 
 .company-code {
@@ -48,6 +54,12 @@
 }
 .time-ago {
   color: var(--mainBlue);
+}
+
+.company-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .card-meta {
@@ -80,6 +92,24 @@
   align-items: flex-start;
   margin: 5px;
   gap: 3px;
+  min-width: 0;
+  padding-left: 0;
+  list-style: none;
+  overflow: hidden;
+}
+
+.ai-summary-item {
+  width: 100%;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  /* 표준 (지원 안 되는 브라우저도 많지만 일단 명시) */
+  line-clamp: 2;
+  /* 실제로 동작하는 거 */
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
 }
 
 .ai-summary-loading {
@@ -102,13 +132,6 @@
   padding: 10px 15px;
   border-radius: 20px;
 }
-
-/* .ai-summary-item {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  width: 100%;
-} */
 
 .card-footer {
   display: flex;

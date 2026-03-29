@@ -3,30 +3,30 @@ import "./notificationItem.css";
 import { useRelativeTime } from "../../../shared/hooks/useRelativeTime";
 
 const NotificationItem = ({
-  type, // "DISCLOSURE_UPDATE" | "AI_SUMMARY"
-  companyName, // "삼성전자"
-  disclosureTitle, // 공시 제목
-  summaryBullets, // string[] | undefined (AI요약 전용)
-  createdAt, // 날짜 string
+  // TODO: 나중에 백엔드에서 type 내려오면 분기 처리
+  // type, // "DISCLOSURE_UPDATE" | "AI_SUMMARY"
+
+  title,
+  content,
+  status, // "READ" | "UNREAD"
+  createdAt,
+  readAt,
 }) => {
   const { text, type: timeType } = useRelativeTime(createdAt);
 
-  const iconClass =
-    type === "AI_SUMMARY" ? "alert-icon ai" : "alert-icon disclosure";
+  // 임시 아이콘 클래스
+  // TODO: type 명세 확정되면 type 기준으로 아이콘 분기
+  const iconClass = "alert-icon disclosure";
 
-  const categoryText =
-    type === "AI_SUMMARY"
-      ? `AI 요약 : ${disclosureTitle}`
-      : `공시 업데이트 : ${disclosureTitle}`;
   return (
-    <div className="NotificationItem">
+    <div className={`NotificationItem ${status === "UNREAD" ? "unread" : ""}`}>
       <div className="alert-left">
         <div className={iconClass}></div>
       </div>
-      {/* 오른쪽 본문 */}
+
       <section className="alert-right">
         <div className="alert-header">
-          <div className="company-name text-lg">{companyName}</div>
+          <div className="company-name text-lg">{title}</div>
           <div
             className={`alert-date text-xs ${
               timeType === "recent" ? "recent-time" : ""
@@ -36,18 +36,10 @@ const NotificationItem = ({
           </div>
         </div>
 
-        <div className="alert-category text-base">{categoryText}</div>
+        <div className="alert-content text-base">{content}</div>
 
-        {/* 본문 분기 */}
-        {type === "AI_SUMMARY" ? (
-          <ul className="alert-summary">
-            {summaryBullets?.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
-        ) : (
-          <p className="alert-content">공시 업데이트 : {disclosureTitle}</p>
-        )}
+        {/* 필요하면 나중에 읽은 시간도 표시 가능 */}
+        {/* {readAt && <div className="alert-readAt text-xs">읽은 시각: {readAt}</div>} */}
       </section>
     </div>
   );

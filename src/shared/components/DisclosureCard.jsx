@@ -56,9 +56,9 @@ const DisclosureCard = ({
         ) : (
           <ul className="ai-summary-list text-base">
             {summaryLines.map((line, idx) => (
-              <li className="ai-summary-item" key={idx}>
+              <p className="ai-summary-item" key={idx}>
                 • {line}
-              </li>
+              </p>
             ))}
           </ul>
         )}
