@@ -8,7 +8,7 @@
 
 import { useEffect, useState } from "react";
 
-const API_BASE_URL = import.meta.env.API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const useFetch = (endpoint) => {
   const [data, setData] = useState(null);
