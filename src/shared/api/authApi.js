@@ -194,16 +194,19 @@
 // };
 
 // 인증 관련 API
-// 현재는 MOCK 데이터 사용
 
-const USE_MOCK = true;
 const ACCESS_TOKEN_KEY = "accessToken";
+const DEVICE_ID_KEY = "deviceId";
+
+const USE_MOCK = import.meta.env.VITE_USE_REAL_AUTH !== "true";
+const AUTH_BASE =
+  import.meta.env.VITE_AUTH_BASE_URL || "http://localhost:9804/api/auth";
 
 // 가상 가입 유저 1명
 let mockUsers = [
   {
     email: "example@gmail.com",
-    password: "example",
+    password: "example123",
     nickname: "이거슨닉네임",
     isPasswordSet: true,
     isNewUser: false,
@@ -235,6 +238,49 @@ const createMockToken = (email) => {
   return `mock-access-token-${email}-${Date.now()}`;
 };
 
+const getOrCreateDeviceId = () => {
+  let id = localStorage.getItem(DEVICE_ID_KEY);
+  if (!id) {
+    id = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    localStorage.setItem(DEVICE_ID_KEY, id);
+  }
+  return id;
+};
+
+const throwIfNotOk = async (res) => {
+  if (res.ok) return;
+  let message = "요청 실패";
+  try {
+    const body = await res.json();
+    message = body.message || body.detail || body.error || message;
+  } catch {
+    /* ignore parse error */
+  }
+  const err = new Error(message);
+  err.status = res.status;
+  throw err;
+};
+
+const normalizeSignupArgs = (userEmailOrPayload, password, nickname) => {
+  if (
+    userEmailOrPayload &&
+    typeof userEmailOrPayload === "object" &&
+    !Array.isArray(userEmailOrPayload)
+  ) {
+    return {
+      userEmail: userEmailOrPayload.userEmail ?? "",
+      password: userEmailOrPayload.password ?? "",
+      nickname: userEmailOrPayload.nickname ?? "",
+    };
+  }
+
+  return {
+    userEmail: userEmailOrPayload ?? "",
+    password: password ?? "",
+    nickname: nickname ?? "",
+  };
+};
+
 export const authApi = {
   // 일반 로그인
   async login(email, password) {
@@ -246,7 +292,9 @@ export const authApi = {
           );
 
           if (!foundUser) {
-            reject(new Error("이메일 또는 비밀번호가 올바르지 않습니다"));
+            const err = new Error("이메일 또는 비밀번호가 올바르지 않습니다.");
+            err.status = 401;
+            reject(err);
             return;
           }
 
@@ -275,21 +323,17 @@ export const authApi = {
       });
     }
 
-    // TODO 실제 API
-    /*
-    const res = await fetch("/api/auth/login", {
+    const res = await fetch(`${AUTH_BASE}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-Device-Id": getOrCreateDeviceId(),
       },
       credentials: "include",
-      body: JSON.stringify({
-        email,
-        password,
-      }),
+      body: JSON.stringify({ email, password }),
     });
 
-    if (!res.ok) throw new Error("로그인 실패");
+    await throwIfNotOk(res);
 
     const data = await res.json();
 
@@ -298,43 +342,44 @@ export const authApi = {
       setAccessToken(data.accessToken);
     }
 
-    return data;
-    */
+    return {
+      email: data.email ?? "",
+      nickname: data.nickname ?? "",
+      accessToken: data.accessToken,
+      accessTokenTtl: data.accessTokenTtl,
+      isPasswordSet: data.isPasswordSet ?? true,
+      isNewUser: data.isNewUser ?? false,
+    };
   },
 
   // 회원가입
-  async signup(userEmail, password, nickname) {
+  async signup(userEmailOrPayload, password, nickname) {
+    const signupData = normalizeSignupArgs(userEmailOrPayload, password, nickname);
+
+    
     if (USE_MOCK) {
       return new Promise((resolve) => {
         setTimeout(() => {
           // mock에서는 실제 추가는 하지 않고,
           // 서버로 넘길 수 있는 구조만 테스트
           resolve({
-            email: userEmail,
+            email: signupData.userEmail,
           });
         }, 300);
       });
     }
 
-    // TODO 실제 API
-    /*
-    const res = await fetch("/api/auth/signup", {
+    const res = await fetch(`${AUTH_BASE}/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({
-        userEmail,
-        password,
-        nickname,
-      }),
+      body: JSON.stringify(signupData),
     });
 
-    if (!res.ok) throw new Error("회원가입 실패");
-
+    await throwIfNotOk(res);
     return res.json();
-    */
   },
 
   // 회원 가입 여부 확인 (boolean 반환)
@@ -348,23 +393,17 @@ export const authApi = {
       });
     }
 
-    // TODO 실제 API
-    /*
-    const res = await fetch("/api/auth/exist", {
+    const res = await fetch(`${AUTH_BASE}/exist`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({
-        email,
-      }),
+      body: JSON.stringify({ userEmail: email }),
     });
 
-    if (!res.ok) throw new Error("회원 조회 실패");
-
-    return res.json(); // boolean
-    */
+    await throwIfNotOk(res);
+    return res.json();
   },
 
   // access token 재발급
@@ -391,18 +430,16 @@ export const authApi = {
             isPasswordSet: mockCurrentUser.isPasswordSet,
             isNewUser: mockCurrentUser.isNewUser,
           });
-        }, 300);
+        }, 200);
       });
     }
 
-    // TODO 실제 API
-    /*
-    const res = await fetch("/api/auth/refresh", {
+    const res = await fetch(`${AUTH_BASE}/refresh`, {
       method: "POST",
       credentials: "include",
     });
 
-    if (!res.ok) throw new Error("토큰 재발급 실패");
+    await throwIfNotOk(res);
 
     const data = await res.json();
 
@@ -410,46 +447,28 @@ export const authApi = {
       setAccessToken(data.accessToken);
     }
 
-    return data;
-    */
+    return {
+      email: data.email ?? "",
+      nickname: data.nickname ?? "",
+      accessToken: data.accessToken,
+      accessTokenTtl: data.accessTokenTtl,
+      isPasswordSet: data.isPasswordSet ?? true,
+      isNewUser: data.isNewUser ?? false,
+    };
   },
-
+  
   // 앱 시작 시 자동 로그인 복구
   async refreshRestart() {
     if (USE_MOCK) {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          if (!mockHasRefreshSession || !mockCurrentUser) {
-            removeAccessToken();
-            mockAccessToken = null;
-            reject(new Error("자동 로그인 복구 실패"));
-            return;
-          }
-
-          const newToken = createMockToken(mockCurrentUser.email);
-          mockAccessToken = newToken;
-          setAccessToken(newToken);
-
-          resolve({
-            email: mockCurrentUser.email,
-            nickname: mockCurrentUser.nickname,
-            accessToken: newToken,
-            accessTokenTtl: 3600,
-            isPasswordSet: mockCurrentUser.isPasswordSet,
-            isNewUser: mockCurrentUser.isNewUser,
-          });
-        }, 300);
-      });
+      return this.refresh();
     }
-
     // TODO 실제 API
-    /*
-    const res = await fetch("/api/auth/refresh-restart", {
+    const res = await fetch(`${AUTH_BASE}/refresh-restart`, {
       method: "POST",
       credentials: "include",
     });
 
-    if (!res.ok) throw new Error("자동 로그인 복구 실패");
+    await throwIfNotOk(res);
 
     const data = await res.json();
 
@@ -457,8 +476,14 @@ export const authApi = {
       setAccessToken(data.accessToken);
     }
 
-    return data;
-    */
+    return {
+      email: data.email ?? "",
+      nickname: data.nickname ?? "",
+      accessToken: data.accessToken,
+      accessTokenTtl: data.accessTokenTtl,
+      isPasswordSet: data.isPasswordSet ?? true,
+      isNewUser: data.isNewUser ?? false,
+    };
   },
 
   // 로그아웃
@@ -475,32 +500,27 @@ export const authApi = {
       });
     }
 
-    // TODO 실제 API
-    /*
-    const res = await fetch("/api/auth/logout", {
-      method: "POST",
-      credentials: "include",
-    });
-
-    removeAccessToken();
-
-    if (!res.ok) throw new Error("로그아웃 실패");
-
+    try {
+      await fetch(`${AUTH_BASE}/logout`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "X-Device-Id": getOrCreateDeviceId(),
+        },
+      });
+    } finally {
+      removeAccessToken();
+    }
     return true;
-    */
   },
 
-  // OAuth 로그인 시작
   startOAuthLogin(provider) {
     if (USE_MOCK) {
       console.log(`[MOCK] OAuth 로그인 시작: ${provider}`);
       return;
     }
 
-    // TODO 실제 API
-    /*
     window.location.href = `/oauth2/authorization/${provider}`;
-    */
   },
 
   getStoredAccessToken() {
