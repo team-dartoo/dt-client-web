@@ -61,6 +61,8 @@ const Notification = () => {
             status={item.status}
             createdAt={item.createdAt}
             readAt={item.readAt}
+            type={item.type}
+            disclosureId={item._id}
           />
         ))
       )}

@@ -52,7 +52,13 @@ const SignUp = () => {
         return;
       }
 
-      await signup(trimmedEmail, password, trimmedName);
+      await signup({
+        userEmail: trimmedEmail,
+        birthday: "2000-01-16",
+        password,
+        nickname: trimmedName,
+        gender: "FEMALE",
+      });
 
       showToast("회원가입이 완료되었습니다. 로그인해주세요.", "success");
 

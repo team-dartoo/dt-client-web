@@ -38,41 +38,18 @@ const CardSkeleton = () => (
   </div>
 );
 
-// const getRelativeTimeText = (dateString) => {
-//   if (!dateString) return "";
+const toSummaryLines = (summaryData) => {
+  if (!Array.isArray(summaryData)) {
+    return ["요약이 아직 없어요."];
+  }
 
-//   const now = new Date();
-//   const target = new Date(dateString);
-//   const diff = now - target;
+  const lines = summaryData.map((line) => line?.trim()).filter(Boolean);
 
-//   const minute = 1000 * 60;
-//   const hour = minute * 60;
-//   const day = hour * 24;
+  if (lines.length === 0) {
+    return ["요약이 아직 없어요."];
+  }
 
-//   if (diff < hour) {
-//     const m = Math.max(1, Math.floor(diff / minute));
-//     return `${m}분 전`;
-//   }
-
-//   if (diff < day) {
-//     const h = Math.floor(diff / hour);
-//     return `${h}시간 전`;
-//   }
-
-//   const d = Math.floor(diff / day);
-//   return `${d}일 전`;
-// };
-
-const toSummaryLines = (text) => {
-  if (!text) return ["요약이 아직 없어요."];
-
-  const parts = text
-    .split(/(?<=[.!?])\s+/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-
-  if (parts.length >= 3) return parts.slice(0, 3);
-  return [text];
+  return lines.slice(0, 3);
 };
 
 const dedupeDisclosures = (list) => {
@@ -211,9 +188,9 @@ const MyCompanySection = ({ defaultExpanded = false }) => {
               title={item.reportName}
               dateTime={item.updatedAt || item.receptionDate}
               isNew={Boolean(item.remark)}
-              sentiment="neutral"
+              sentimentTag={item.summary?.sentimentTag}
               summaryStatus="success"
-              summaryLines={toSummaryLines(item.summary?.data?.text)}
+              summaryLines={toSummaryLines(item.summary?.data)}
             />
           ))
         )}

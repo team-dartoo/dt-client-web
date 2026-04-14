@@ -10,19 +10,25 @@ const USE_MOCK = true;
 let mockNotificationList = [
   {
     id: "20",
-    title: "알림제목",
-    content: "알림내용",
+    title: "한온시스템 공시 업데이트",
+    content: "기업설명회(IR)개최(안내공시)",
     status: "READ",
     createdAt: "2026-02-09T12:30:00Z",
     readAt: "2026-02-10T12:30:00Z",
+    //추가
+    type: "DISCLOSURE_UPDATE",
+    _id: "20250925800487",
   },
   {
     id: "21",
-    title: "알림제목",
-    content: "알림내용",
+    title: "한온시스템 공시 요약 알림",
+    content: "기업설명회(IR)개최(안내공시)",
     status: "UNREAD",
     createdAt: "2026-02-09T12:30:00Z",
     readAt: null,
+    //추가
+    type: "AI_SUMMARY",
+    _id: "20250925800487",
   },
 ];
 

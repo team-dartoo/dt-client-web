@@ -38,6 +38,10 @@
   flex: 1;
 }
 
+.detail-text {
+  white-space: nowrap;
+}
+
 .company-code {
   color: var(--mainBluePoint);
 }

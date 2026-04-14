@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import beginTitle from "@/images/begin_title.png";
 import kakao from "@/images/kakao_icon.svg";
@@ -9,12 +9,9 @@ import "./begin.css";
 
 const Begin = () => {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const handleGoLogin = () => {
-    navigate("/login", {
-      state: { from: location.state?.from },
-    });
+    navigate("/login");
   };
 
   return (

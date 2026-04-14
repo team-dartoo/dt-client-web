@@ -71,13 +71,15 @@ const ProfileDetail = () => {
           </div>
 
           {isEditing && (
-            <form onSubmit={handleSubmit}>
-              <input
-                ref={inputRef}
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                maxLength={8}
-              />
+            <form className="field" onSubmit={handleSubmit}>
+              <p>
+                <input
+                  ref={inputRef}
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  maxLength={8}
+                />
+              </p>
             </form>
           )}
         </div>

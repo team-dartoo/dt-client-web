@@ -4,6 +4,12 @@ import "./disclosureCard.css";
 import chevronRight from "@/images/chevron-right.svg";
 import { useRelativeTime } from "../hooks/useRelativeTime";
 
+const getSentimentType = (sentimentTag) => {
+  if (sentimentTag === "호재") return "positive";
+  if (sentimentTag === "악재") return "negative";
+  return "neutral";
+};
+
 const DisclosureCard = ({
   companyId,
   companyName,
@@ -12,16 +18,17 @@ const DisclosureCard = ({
   title,
   dateTime,
   isNew,
-  sentiment, // "positive" | "neutral" | "negative"
+  sentimentTag, // "호재" | "중립" | "악재"
   summaryStatus, // "loading" | "success"
   summaryLines = [],
 }) => {
   const navigate = useNavigate();
   const { text, type } = useRelativeTime(dateTime);
 
+  const sentimentType = getSentimentType(sentimentTag);
+
   return (
     <div className="disclosure-card">
-      {/* 헤더 */}
       <div className="card-header">
         <div className="card-header-left">
           <span
@@ -34,18 +41,16 @@ const DisclosureCard = ({
         </div>
 
         <div className="card-header-right">
-          {isNew && <span className="new-badge">new</span>}
+          {/* {isNew && <span className="new-badge">new</span>} */}
           <span className={`time-ago ${type}`}>{text}</span>
         </div>
       </div>
 
-      {/* 공시 정보 */}
       <div className="card-meta">
         <span className="meta-icon">📃</span>
         <span className="meta-text text-base">{title}</span>
       </div>
 
-      {/* AI 요약 */}
       <div className="ai-summary-box">
         <div className="ai-summary-title">
           <span className="ai-title-text">🤖 AI 세줄 요약</span>
@@ -64,7 +69,6 @@ const DisclosureCard = ({
         )}
       </div>
 
-      {/* 하단 */}
       <div className="card-footer">
         <button
           className="detail-link"
@@ -77,12 +81,8 @@ const DisclosureCard = ({
           <img src={chevronRight} alt="detail-link" />
         </button>
 
-        <span className={`sentiment-chip ${sentiment}`}>
-          {sentiment === "positive"
-            ? "긍정적"
-            : sentiment === "negative"
-              ? "부정적"
-              : "중립"}
+        <span className={`sentiment-chip ${sentimentType}`}>
+          {sentimentTag || "중립"}
         </span>
       </div>
     </div>
