@@ -1,7 +1,23 @@
-// src/shared/api/authApi.js
-
 const ACCESS_TOKEN_KEY = "accessToken";
-const BASE_URL = import.meta.env.VITE_API_URL;
+const DEVICE_ID_KEY = "deviceId";
+
+const USE_MOCK = import.meta.env.VITE_USE_REAL_AUTH !== "true";
+const AUTH_BASE =
+  import.meta.env.VITE_AUTH_BASE_URL || "http://localhost:9804/api/auth";
+
+let mockUsers = [
+  {
+    email: "example@gmail.com",
+    password: "example123",
+    nickname: "이거슨닉네임",
+    isPasswordSet: true,
+    isNewUser: false,
+  },
+];
+
+let mockCurrentUser = null;
+let mockAccessToken = null;
+let mockHasRefreshSession = false;
 
 const setAccessToken = (token) => {
   if (!token) return;
@@ -16,12 +32,10 @@ const removeAccessToken = () => {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
 };
 
-// 에러 응답 파싱
 const parseErrorResponse = async (res, defaultMessage) => {
   try {
     const data = await res.json();
 
-    // 백엔드 에러 형식들 최대한 흡수
     const message =
       data?.message || data?.errorMessage || data?.error || defaultMessage;
 
@@ -42,10 +56,9 @@ const parseErrorResponse = async (res, defaultMessage) => {
   }
 };
 
-// 공통 요청 함수
 const request = async (path, options = {}) => {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    credentials: "include", // refresh_token 쿠키 대응
+  const res = await fetch(`${AUTH_BASE}${path}`, {
+    credentials: "include",
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -56,15 +69,88 @@ const request = async (path, options = {}) => {
   return res;
 };
 
+const createMockToken = (email) => `mock-access-token-${email}-${Date.now()}`;
+
+const getOrCreateDeviceId = () => {
+  let id = localStorage.getItem(DEVICE_ID_KEY);
+  if (!id) {
+    id = crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    localStorage.setItem(DEVICE_ID_KEY, id);
+  }
+  return id;
+};
+
+const normalizeSignupArgs = (userEmailOrPayload, password, nickname) => {
+  if (
+    userEmailOrPayload &&
+    typeof userEmailOrPayload === "object" &&
+    !Array.isArray(userEmailOrPayload)
+  ) {
+    return {
+      userEmail: userEmailOrPayload.userEmail ?? "",
+      password: userEmailOrPayload.password ?? "",
+      nickname: userEmailOrPayload.nickname ?? "",
+      ...(userEmailOrPayload.birthday
+        ? { birthday: userEmailOrPayload.birthday }
+        : {}),
+      ...(userEmailOrPayload.gender ? { gender: userEmailOrPayload.gender } : {}),
+    };
+  }
+
+  return {
+    userEmail: userEmailOrPayload ?? "",
+    password: password ?? "",
+    nickname: nickname ?? "",
+  };
+};
+
 export const authApi = {
-  // 일반 로그인
   async login(email, password) {
-    const res = await request("/api/auth/login", {
+    if (USE_MOCK) {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          const foundUser = mockUsers.find(
+            (user) => user.email === email && user.password === password,
+          );
+
+          if (!foundUser) {
+            const err = new Error("이메일 또는 비밀번호가 올바르지 않습니다.");
+            err.status = 401;
+            reject(err);
+            return;
+          }
+
+          const token = createMockToken(foundUser.email);
+          mockCurrentUser = {
+            email: foundUser.email,
+            nickname: foundUser.nickname,
+            isPasswordSet: foundUser.isPasswordSet,
+            isNewUser: foundUser.isNewUser,
+          };
+          mockAccessToken = token;
+          mockHasRefreshSession = true;
+          setAccessToken(token);
+
+          resolve({
+            email: foundUser.email,
+            nickname: foundUser.nickname,
+            accessToken: token,
+            accessTokenTtl: 3600,
+            isPasswordSet: foundUser.isPasswordSet,
+            isNewUser: foundUser.isNewUser,
+          });
+        }, 300);
+      });
+    }
+
+    const res = await request("/login", {
       method: "POST",
-      body: JSON.stringify({
-        email,
-        password,
-      }),
+      headers: {
+        "X-Device-Id": getOrCreateDeviceId(),
+      },
+      body: JSON.stringify({ email, password }),
     });
 
     if (!res.ok) {
@@ -76,27 +162,36 @@ export const authApi = {
     }
 
     const data = await res.json();
-
-    // 명세상 accessToken body로 옴
     if (data.accessToken) {
       setAccessToken(data.accessToken);
     }
 
-    return data;
+    return {
+      email: data.email ?? "",
+      nickname: data.nickname ?? "",
+      accessToken: data.accessToken,
+      accessTokenTtl: data.accessTokenTtl,
+      isPasswordSet: data.isPasswordSet ?? true,
+      isNewUser: data.isNewUser ?? false,
+    };
   },
 
-  // 회원가입
-  async signup({ userEmail, birthday, password, nickname, gender }) {
-    console.log(userEmail, birthday, password, nickname, gender);
-    const res = await request("/api/auth/signup", {
+  async signup(userEmailOrPayload, password, nickname) {
+    const signupData = normalizeSignupArgs(userEmailOrPayload, password, nickname);
+
+    if (USE_MOCK) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({
+            email: signupData.userEmail,
+          });
+        }, 300);
+      });
+    }
+
+    const res = await request("/signup", {
       method: "POST",
-      body: JSON.stringify({
-        userEmail,
-        birthday: "2000-01-16",
-        password,
-        nickname,
-        gender: "FEMALE",
-      }),
+      body: JSON.stringify(signupData),
     });
 
     if (!res.ok) {
@@ -107,29 +202,60 @@ export const authApi = {
       await parseErrorResponse(res, defaultMessage);
     }
 
-    return res.json(); // { email: "..." }
+    return res.json();
   },
 
-  // 회원 존재 여부 확인
   async checkExist(userEmail) {
-    const res = await request("/api/auth/exist", {
+    if (USE_MOCK) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(mockUsers.some((user) => user.email === userEmail));
+        }, 300);
+      });
+    }
+
+    const res = await request("/exist", {
       method: "POST",
-      body: JSON.stringify({
-        userEmail,
-      }),
+      body: JSON.stringify({ userEmail }),
     });
 
     if (!res.ok) {
       await parseErrorResponse(res, "회원 조회에 실패했습니다.");
     }
 
-    // 명세상 boolean 본문 직접 반환
     return res.json();
   },
 
-  // access token 재발급
   async refresh() {
-    const res = await request("/api/auth/refresh", {
+    if (USE_MOCK) {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (!mockHasRefreshSession || !mockCurrentUser) {
+            removeAccessToken();
+            mockAccessToken = null;
+            const err = new Error("토큰 재발급에 실패했습니다.");
+            err.status = 401;
+            reject(err);
+            return;
+          }
+
+          const newToken = createMockToken(mockCurrentUser.email);
+          mockAccessToken = newToken;
+          setAccessToken(newToken);
+
+          resolve({
+            email: mockCurrentUser.email,
+            nickname: mockCurrentUser.nickname,
+            accessToken: newToken,
+            accessTokenTtl: 3600,
+            isPasswordSet: mockCurrentUser.isPasswordSet,
+            isNewUser: mockCurrentUser.isNewUser,
+          });
+        }, 200);
+      });
+    }
+
+    const res = await request("/refresh", {
       method: "POST",
     });
 
@@ -138,17 +264,26 @@ export const authApi = {
     }
 
     const data = await res.json();
-
     if (data.accessToken) {
       setAccessToken(data.accessToken);
     }
 
-    return data;
+    return {
+      email: data.email ?? "",
+      nickname: data.nickname ?? "",
+      accessToken: data.accessToken,
+      accessTokenTtl: data.accessTokenTtl,
+      isPasswordSet: data.isPasswordSet ?? true,
+      isNewUser: data.isNewUser ?? false,
+    };
   },
 
-  // 앱 재시작 시 자동 로그인 복구
   async refreshRestart() {
-    const res = await request("/api/auth/refresh-restart", {
+    if (USE_MOCK) {
+      return this.refresh();
+    }
+
+    const res = await request("/refresh-restart", {
       method: "POST",
     });
 
@@ -157,32 +292,54 @@ export const authApi = {
     }
 
     const data = await res.json();
-
     if (data.accessToken) {
       setAccessToken(data.accessToken);
     }
 
-    return data;
+    return {
+      email: data.email ?? "",
+      nickname: data.nickname ?? "",
+      accessToken: data.accessToken,
+      accessTokenTtl: data.accessTokenTtl,
+      isPasswordSet: data.isPasswordSet ?? true,
+      isNewUser: data.isNewUser ?? false,
+    };
   },
 
-  // 로그아웃
   async logout() {
-    const res = await request("/api/auth/logout", {
-      method: "POST",
-    });
-
-    // 로그아웃은 204 No Content
-    if (!res.ok) {
-      await parseErrorResponse(res, "로그아웃에 실패했습니다.");
+    if (USE_MOCK) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          mockCurrentUser = null;
+          mockAccessToken = null;
+          mockHasRefreshSession = false;
+          removeAccessToken();
+          resolve(true);
+        }, 300);
+      });
     }
 
-    removeAccessToken();
+    try {
+      await request("/logout", {
+        method: "POST",
+        headers: {
+          "X-Device-Id": getOrCreateDeviceId(),
+        },
+      });
+    } finally {
+      removeAccessToken();
+    }
+
     return true;
   },
 
-  // OAuth 로그인 시작
   startOAuthLogin(provider) {
-    window.location.href = `${BASE_URL}/oauth2/authorization/${provider}`;
+    if (USE_MOCK) {
+      console.log(`[MOCK] OAuth 로그인 시작: ${provider}`);
+      return;
+    }
+
+    window.location.href = `${AUTH_BASE.replace(/\/api\/auth$/, "")}/oauth2/authorization/${provider}`;
   },
 
   getStoredAccessToken() {

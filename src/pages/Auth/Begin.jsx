@@ -1,6 +1,7 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Navigate } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../contexts/useAuth";
 import beginTitle from "@/images/begin_title.png";
 import kakao from "@/images/kakao_icon.svg";
 import google from "@/images/google_icon.svg";
@@ -9,6 +10,12 @@ import "./begin.css";
 
 const Begin = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated } = useAuth();
+
+  if (isAuthenticated) {
+    return <Navigate to="/main" replace />;
+  }
 
   const handleGoLogin = () => {
     navigate("/login");
