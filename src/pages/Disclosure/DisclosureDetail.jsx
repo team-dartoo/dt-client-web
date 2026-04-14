@@ -1,8 +1,3 @@
-// api 목록
-// 단일 공시 조회
-// 공시 원문 URL 조회
-// 플랜 정보 조회
-
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Loading from "../../shared/components/Loading";
@@ -18,44 +13,42 @@ import { useRelativeTime } from "../../shared/hooks/useRelativeTime";
 import { useAuth } from "../../contexts/useAuth";
 import AuthPromptSheet from "../../shared/components/AuthPromptSheet";
 
-const toSummaryLines = (text) => {
-  if (!text) return ["요약이 아직 없어요."];
+const toSummaryLines = (summaryData) => {
+  // summary.data가 ["...", "...", "..."] 형태로 온다고 가정
+  if (!Array.isArray(summaryData)) {
+    return ["요약이 아직 없어요."];
+  }
 
-  const parts = text
-    .split(/(?<=[.!?])\s+/)
-    .map((s) => s.trim())
-    .filter(Boolean);
+  const lines = summaryData.map((line) => line?.trim()).filter(Boolean);
 
-  if (parts.length >= 3) return parts.slice(0, 3);
-  return [text];
+  if (lines.length === 0) {
+    return ["요약이 아직 없어요."];
+  }
+
+  return lines.slice(0, 3);
 };
 
-// 임시
-const getSentimentInfo = (tags = []) => {
-  if (tags.includes("유상증자")) {
+const getSentimentInfo = (sentimentTag) => {
+  if (sentimentTag === "호재") {
     return {
-      label: "부정적",
-      type: "negative",
-      tooltip: "AI 감성 분석 결과를 기반으로\n부정적으로 분류된 공시입니다.",
+      label: "호재",
+      type: "positive",
+      tooltip: "AI 감성 분석 결과를 기반으로\n호재로 분류된 공시입니다.",
     };
   }
 
-  if (
-    tags.includes("실적") ||
-    tags.includes("IR") ||
-    tags.includes("기업설명회")
-  ) {
+  if (sentimentTag === "악재") {
     return {
-      label: "긍정적",
-      type: "positive",
-      tooltip: "AI 감성 분석 결과를 기반으로\n긍정적으로 분류된 공시입니다.",
+      label: "악재",
+      type: "negative",
+      tooltip: "AI 감성 분석 결과를 기반으로\n악재로 분류된 공시입니다.",
     };
   }
 
   return {
     label: "중립",
     type: "neutral",
-    tooltip: "AI 감성 분석 결과를 기반으로\n중립적으로 분류된 공시입니다.",
+    tooltip: "AI 감성 분석 결과를 기반으로\n중립으로 분류된 공시입니다.",
   };
 };
 
@@ -96,14 +89,18 @@ const DisclosureDetail = () => {
         setLoading(true);
         setError(null);
 
-        const [detailRes, urlRes] = await Promise.all([
-          disclosureApi.getDisclosureById(disclosureId),
-          disclosureApi.getDisclosureDownloadUrl(disclosureId),
-        ]);
+        const detailRes = await disclosureApi.getDisclosureById(disclosureId);
+
+        let urlRes = null;
+        try {
+          urlRes = await disclosureApi.getDisclosureDownloadUrl(disclosureId);
+        } catch (urlError) {
+          console.error("공시 원문 URL 조회 실패:", urlError);
+        }
 
         if (!alive) return;
 
-        const sentiment = getSentimentInfo(detailRes.tags || []);
+        const sentiment = getSentimentInfo(detailRes.summary?.sentimentTag);
 
         const mapped = {
           disclosureId: detailRes._id,
@@ -114,8 +111,9 @@ const DisclosureDetail = () => {
           updatedAt: detailRes.updatedAt || detailRes.receptionDate,
           sentiment,
           tags: detailRes.tags || [],
-          summaryLines: toSummaryLines(detailRes.summary?.data?.text),
-          originalUrl: urlRes.downloadUrl,
+          summaryLines: toSummaryLines(detailRes.summary?.data),
+          originalUrl:
+            urlRes?.downloadUrl || detailRes.originalDocumentUrl || "",
         };
 
         setDisclosure(mapped);
@@ -128,9 +126,13 @@ const DisclosureDetail = () => {
       }
     };
 
-    if (disclosureId) {
-      fetchDisclosureDetail();
+    if (!disclosureId) {
+      setError("공시 ID가 없습니다.");
+      setLoading(false);
+      return;
     }
+
+    fetchDisclosureDetail();
 
     return () => {
       alive = false;
@@ -189,15 +191,8 @@ function DisclosureDetailContent({
 }) {
   const { text: relativeUpdatedAt } = useRelativeTime(disclosure.updatedAt);
 
-  const {
-    title,
-    companyName,
-    updatedAt,
-    sentiment,
-    tags,
-    summaryLines,
-    originalUrl,
-  } = disclosure;
+  const { title, companyName, sentiment, tags, summaryLines, originalUrl } =
+    disclosure;
 
   return (
     <div className="DisclosureDetail page">
@@ -226,7 +221,7 @@ function DisclosureDetailContent({
       />
 
       <section className="dis-header">
-        <h1 className="text-3xl">{title}</h1>
+        <h1 className="dis-title text-3xl">{title}</h1>
         <div className="dis-sub">
           <h2>{companyName}</h2>
           <h3 className="text-xs">공시 업데이트 : {relativeUpdatedAt}</h3>
@@ -244,7 +239,7 @@ function DisclosureDetailContent({
                   className="info-btn"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setOpen((v) => !v);
+                    setOpen((prev) => !prev);
                   }}
                 >
                   <img src={infoIcon} alt="tooltip" />
@@ -265,9 +260,9 @@ function DisclosureDetailContent({
           </div>
 
           <div className="tag-wrapper">
-            {tags.map((t) => (
-              <div className="common-tag" key={t}>
-                #{t}
+            {tags.map((tag) => (
+              <div className="common-tag" key={tag}>
+                #{tag}
               </div>
             ))}
           </div>
@@ -302,25 +297,41 @@ function DisclosureDetailContent({
         <h5>주의사항</h5>
         <ul className="dis-notice-list text-xs">
           <li className="dis-notice-item">
-            • 본 요약은 공시 요약 특화 AI가 생성한 참고 정보입니다.
+            <span className="bullet">•</span>
+            <span>본 요약은 공시 요약 특화 AI가 생성한 참고 정보입니다.</span>
           </li>
           <li className="dis-notice-item">
-            • 투자 판단 및 의사결정의 최종 책임은 이용자 본인에게 있습니다.
+            <span className="bullet">•</span>
+            <span>
+              투자 판단 및 의사결정의 최종 책임은 이용자 본인에게 있습니다.
+            </span>
           </li>
           <li className="dis-notice-item">
-            • 중요한 의사결정 전에는 반드시 공시 원문을 직접 확인하시기
-            바랍니다.
+            <span className="bullet">•</span>
+            <span>
+              중요한 의사결정 전에는 반드시 공시 원문을 직접 확인하시기
+              바랍니다.
+            </span>
           </li>
           <li className="dis-notice-item">
-            • AI 요약 결과는 일부 정보가 축약되거나 해석이 포함될 수 있습니다.
+            <span className="bullet">•</span>
+            <span>
+              AI 요약 결과는 일부 정보가 축약되거나 해석이 포함될 수 있습니다.
+            </span>
           </li>
           <li className="dis-notice-item">
-            • 시장 상황 및 기업 공시는 수시로 변경될 수 있으니 최신 정보를
-            확인하세요.
+            <span className="bullet">•</span>
+            <span>
+              시장 상황 및 기업 공시는 수시로 변경될 수 있으니 최신 정보를
+              확인하세요.
+            </span>
           </li>
           <li className="dis-notice-item">
-            • 본 서비스는 투자 수익을 보장하지 않으며 참고용 정보 제공을
-            목적으로 합니다.
+            <span className="bullet">•</span>
+            <span>
+              본 서비스는 투자 수익을 보장하지 않으며 참고용 정보 제공을
+              목적으로 합니다.
+            </span>
           </li>
         </ul>
       </section>
@@ -336,7 +347,7 @@ function DisclosureDetailContent({
           }
 
           // TODO: 챗봇 페이지 이동
-          // navigate(`/chatbot?disclosureId=${disclosure.disclosureId}`)
+          // navigate(`/chatbot?disclosureId=${disclosure.disclosureId}`);
         }}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {

@@ -3,7 +3,6 @@
 // 기업 북마크 해제 *
 // 기업 상세 조회
 // 공시 목록 조회
-
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../../shared/components/Header";
@@ -50,6 +49,20 @@ const StarOutline = () => (
     />
   </svg>
 );
+
+const toSummaryLines = (summaryData) => {
+  if (!Array.isArray(summaryData)) {
+    return ["요약이 아직 없어요."];
+  }
+
+  const lines = summaryData.map((line) => line?.trim()).filter(Boolean);
+
+  if (lines.length === 0) {
+    return ["요약이 아직 없어요."];
+  }
+
+  return lines.slice(0, 3);
+};
 
 const CompanyDetail = () => {
   const navigate = useNavigate();
@@ -163,7 +176,7 @@ const CompanyDetail = () => {
         </div>
 
         <div className="company-right">
-          <h1>공시 {company.disclosureCount}건</h1>
+          <h1 className="text-xl">공시 {company.disclosureCount}건</h1>
           <p className="text-sm">
             최근 공시일 {company.latestDisclosureDate.slice(0, 10)}
           </p>
@@ -200,9 +213,7 @@ const CompanyDetail = () => {
         <div className="content-box">
           {activeTab === "DISCLOSURE" &&
             company.disclosures?.items?.map((disclosure) => {
-              const isNew =
-                new Date() - new Date(disclosure.updatedAt) <
-                1000 * 60 * 60 * 24;
+              const isNew = Boolean(disclosure.remark);
 
               return (
                 <DisclosureCard
@@ -213,14 +224,10 @@ const CompanyDetail = () => {
                   disclosureId={disclosure._id}
                   title={disclosure.reportName}
                   dateTime={disclosure.updatedAt || disclosure.receptionDate}
-                  isNew={isNew}
-                  sentiment={disclosure.sentimentTag}
+                  isNew={Boolean(disclosure.remark)}
+                  sentimentTag={disclosure.summary?.sentimentTag}
                   summaryStatus="success"
-                  summaryLines={
-                    disclosure.summary?.text
-                      ? [disclosure.summary.text]
-                      : ["요약이 아직 없어요."]
-                  }
+                  summaryLines={toSummaryLines(disclosure.summary?.data)}
                 />
               );
             })}

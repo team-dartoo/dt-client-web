@@ -22,13 +22,23 @@ export const mockDisclosureListResponse = {
         stockCode: "018880",
         corpCls: "Y",
       },
+      flrName: "한온시스템",
       receptionDate: "2025-09-25T00:00:00Z",
+      remark: "유",
+      originalDocumentUrl:
+        "https://minio.dartoo.com/documents/20250925800487.pdf",
       tags: ["IR", "기업설명회"],
       summary: {
-        data: {
-          text: "3분기 실적 발표 관련 기관투자자 대상 IR 예정",
-        },
+        data: [
+          "당사는 2025년 10월 1일, 3분기 실적 발표 관련하여 국내외 기관투자자를 대상으로 기업설명회(IR)를 개최할 예정입니다.",
+          "",
+          "",
+        ],
+        workerVersion: "1.2.0",
+        summarizedAt: "2025-09-25T14:30:15Z",
+        sentimentTag: "호재",
       },
+      schemaVersion: "1.0",
       createdAt: "2025-09-25T13:00:05Z",
       updatedAt: "2025-09-25T14:30:15Z",
     },
@@ -41,9 +51,14 @@ export const mockDisclosureListResponse = {
         stockCode: "018880",
         corpCls: "Y",
       },
+      flrName: "한온시스템",
       receptionDate: "2025-09-25T00:00:00Z",
-      tags: ["유상증자"],
+      remark: null,
+      originalDocumentUrl:
+        "https://minio.dartoo.com/documents/20250925000485.pdf",
+      tags: ["유상증자", "기재정정"],
       summary: null,
+      schemaVersion: "1.0",
       createdAt: "2025-09-25T12:55:10Z",
       updatedAt: "2025-09-25T12:55:10Z",
     },
@@ -58,13 +73,23 @@ export const mockDisclosureListResponse = {
         stockCode: "005930",
         corpCls: "Y",
       },
+      flrName: "삼성전자",
       receptionDate: "2025-09-24T00:00:00Z",
+      remark: null,
+      originalDocumentUrl:
+        "https://minio.dartoo.com/documents/20250924800123.pdf",
       tags: ["분기보고서", "실적"],
       summary: {
-        data: {
-          text: "반도체 부문 회복으로 전년 대비 매출 15% 증가",
-        },
+        data: [
+          "반도체 부문 회복으로 전년 대비 매출이 증가했습니다.",
+          "주요 사업 부문의 수익성이 개선되었습니다.",
+          "",
+        ],
+        workerVersion: "1.2.0",
+        summarizedAt: "2025-09-24T16:20:00Z",
+        sentimentTag: "호재",
       },
+      schemaVersion: "1.0",
       createdAt: "2025-09-24T15:10:00Z",
       updatedAt: "2025-09-24T16:20:00Z",
     },
@@ -77,13 +102,23 @@ export const mockDisclosureListResponse = {
         stockCode: "005930",
         corpCls: "Y",
       },
+      flrName: "삼성전자",
       receptionDate: "2025-09-23T00:00:00Z",
+      remark: null,
+      originalDocumentUrl:
+        "https://minio.dartoo.com/documents/20250923000999.pdf",
       tags: ["투자"],
       summary: {
-        data: {
-          text: "차세대 AI 반도체 생산라인 증설 투자 결정",
-        },
+        data: [
+          "차세대 AI 반도체 생산라인 증설을 위한 투자 결정이 공시되었습니다.",
+          "",
+          "",
+        ],
+        workerVersion: "1.2.0",
+        summarizedAt: "2025-09-23T11:22:00Z",
+        sentimentTag: "호재",
       },
+      schemaVersion: "1.0",
       createdAt: "2025-09-23T11:22:00Z",
       updatedAt: "2025-09-23T11:22:00Z",
     },
@@ -96,9 +131,14 @@ export const mockDisclosureListResponse = {
         stockCode: "005930",
         corpCls: "Y",
       },
+      flrName: "삼성전자",
       receptionDate: "2025-09-22T00:00:00Z",
+      remark: null,
+      originalDocumentUrl:
+        "https://minio.dartoo.com/documents/20250922000111.pdf",
       tags: ["IR"],
       summary: null,
+      schemaVersion: "1.0",
       createdAt: "2025-09-22T09:10:00Z",
       updatedAt: "2026-03-10T09:10:00Z",
     },
@@ -113,13 +153,19 @@ export const mockDisclosureListResponse = {
         stockCode: "000660",
         corpCls: "Y",
       },
+      flrName: "SK하이닉스",
       receptionDate: "2025-09-21T00:00:00Z",
+      remark: null,
+      originalDocumentUrl:
+        "https://minio.dartoo.com/documents/20250921000456.pdf",
       tags: ["반기보고서"],
       summary: {
-        data: {
-          text: "HBM 수요 증가로 영업이익 개선",
-        },
+        data: ["HBM 수요 증가로 영업이익이 개선되었습니다.", "", ""],
+        workerVersion: "1.2.0",
+        summarizedAt: "2025-09-21T14:00:00Z",
+        sentimentTag: "호재",
       },
+      schemaVersion: "1.0",
       createdAt: "2025-09-21T14:00:00Z",
       updatedAt: "2025-09-21T14:00:00Z",
     },
@@ -137,19 +183,6 @@ const mockDisclosureUrlResponse = {
 };
 
 // ===== helper 함수 =====
-
-// 감정 태그 자동 부여
-function getSentimentTag(tags = []) {
-  if (tags.includes("유상증자")) return "negative";
-  if (
-    tags.includes("실적") ||
-    tags.includes("IR") ||
-    tags.includes("기업설명회")
-  ) {
-    return "positive";
-  }
-  return "neutral";
-}
 
 // 공시 원문 URL mock 생성
 function makeOriginalDocumentUrl(id) {
@@ -192,14 +225,15 @@ function buildCompanyMapFromDisclosures() {
     company.disclosures.push({
       _id: item._id,
       reportName: item.reportName,
+      flrName: item.flrName,
       receptionDate: item.receptionDate,
+      remark: item.remark,
       updatedAt: item.updatedAt,
-      originalDocumentUrl: makeOriginalDocumentUrl(item._id),
+      originalDocumentUrl: item.originalDocumentUrl,
       tags: item.tags || [],
-      sentimentTag: getSentimentTag(item.tags || []),
-      summary: item.summary?.data?.text
-        ? { text: item.summary.data.text }
-        : null,
+      summary: item.summary,
+      schemaVersion: item.schemaVersion,
+      createdAt: item.createdAt,
     });
   });
 
@@ -342,21 +376,13 @@ function buildSingleDisclosureMap() {
       _id: item._id,
       reportName: item.reportName,
       company: item.company,
-      flrName: item.company.corpName,
+      flrName: item.flrName,
       receptionDate: item.receptionDate,
-      remark: "유",
-      originalDocumentUrl: makeOriginalDocumentUrl(item._id),
+      remark: item.remark,
+      originalDocumentUrl: item.originalDocumentUrl,
       tags: item.tags || [],
-      summary: item.summary?.data?.text
-        ? {
-            data: {
-              text: item.summary.data.text,
-            },
-            workerVersion: "1.1.0",
-            summarizedAt: item.updatedAt,
-          }
-        : null,
-      schemaVersion: "1.0",
+      summary: item.summary,
+      schemaVersion: item.schemaVersion,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
     });

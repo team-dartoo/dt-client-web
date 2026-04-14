@@ -18,26 +18,26 @@ const SearchBar = ({ value, onChange, onSubmit, onClear }) => {
   const isMainPage = pathname === "/main";
   const isSearchPage = pathname === "/main/search";
 
-  // 🔹 부모 value 변경 시 동기화
+  // 부모 value 변경 시 동기화
   useEffect(() => {
     setKeyword(value ?? "");
   }, [value]);
 
-  // 🔹 검색 페이지 진입 시 자동 포커스
+  // 검색 페이지 진입 시 자동 포커스
   useEffect(() => {
     if (isSearchPage && inputRef.current) {
       inputRef.current.focus();
     }
   }, [isSearchPage]);
 
-  // 🔹 main에서 클릭하면 search로 이동
+  // main에서 클릭하면 search로 이동
   const handleWrapperClick = () => {
     if (isMainPage) {
       navigate("/main/search");
     }
   };
 
-  // 🔹 뒤로가기 버튼 로직 개선
+  // 뒤로가기 버튼 로직 개선
   const handleBack = (e) => {
     e.stopPropagation();
 

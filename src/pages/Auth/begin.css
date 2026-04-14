@@ -70,8 +70,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-
-  aspect-ratio: 683 / 777;
 }
 
 .begin .title-wrapper img {
@@ -82,6 +80,6 @@
 
 @media screen and (min-width: 768px) {
   .begin .title-wrapper img {
-    width: 40%;
+    width: 60%;
   }
 }

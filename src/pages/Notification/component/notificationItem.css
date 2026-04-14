@@ -1,43 +1,30 @@
 .NotificationItem {
   display: flex;
-  width: 100vw;
+  width: 100%;
   padding: 15px 22px;
   gap: 15px;
   border-bottom: 1px solid var(--gray2);
+  box-sizing: border-box;
 }
 
-.alert-icon {
-  margin: 5px 0;
-  width: var(--default-fz);
-  height: var(--default-fz);
-  border-radius: 999px;
+.alert-left {
+  flex-shrink: 0; /* 줄어들지 않게 */
 }
-
-.alert-icon.disclosure {
-  background-color: var(--mainBlue);
-}
-
-.alert-icon.ai {
-  background-color: var(--mainBluePoint);
-}
-
-/* .alert-left {
-  background-color: pink;
-} */
 
 .alert-right {
-  /* background-color: aqua; */
   display: flex;
   flex-direction: column;
   gap: 5px;
   width: 100%;
+  cursor: pointer;
 }
 
 .alert-header {
   width: 100%;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 12px;
 }
 
 .company-name {
@@ -46,16 +33,17 @@
 }
 
 .alert-category {
-  font-weight: 500;
+  font-weight: 600;
 }
+
 .alert-summary {
   padding-left: 18px;
   margin: 0;
-  list-style: disc; /* ← 기본 점 복원 */
+  list-style: disc;
 }
 
 .alert-summary li {
-  list-style: inherit; /* ← 각 li가 부모의 disc 스타일 상속 */
+  list-style: inherit;
   font-weight: 300;
 }
 
@@ -65,8 +53,27 @@
 
 .alert-date {
   color: var(--subText);
+  white-space: nowrap; /* 날짜 줄바꿈 방지 */
+  flex-shrink: 0;
 }
 
 .recent-time {
   color: var(--mainBlue);
+}
+
+.alert-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  aspect-ratio: 1/1;
+}
+
+.ai {
+  border-radius: 15px;
+  background: var(--mainBlueDark, #26599a);
+}
+
+.disclosure {
+  border-radius: 15px;
+  background: var(--mainBluePoint, #5292e7);
 }

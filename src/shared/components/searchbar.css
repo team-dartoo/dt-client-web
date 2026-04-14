@@ -10,6 +10,8 @@
   flex-shrink: 0;
   border-radius: 9999px;
   border: 2px solid var(--mainBlueDark);
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .searchBar input {
@@ -17,9 +19,14 @@
   border: none;
   outline: none;
   font-size: calc(var(--default-fz) * 1.2857); /* 18px */
+  min-width: 0;
 }
 
 .searchBar input::placeholder {
   color: var(--gray3);
   font-size: var(--default-fz);
+}
+
+.searchBar .clear-btn {
+  flex-shrink: 0;
 }

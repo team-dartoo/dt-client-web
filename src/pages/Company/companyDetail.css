@@ -34,17 +34,11 @@
 }
 
 .company-right {
-  margin-right: 26px;
+  margin-right: 2rem;
   color: white;
   display: flex;
   flex-direction: column;
   gap: 3px;
-}
-
-.company-right h1 {
-  font-weight: 700;
-  letter-spacing: -0.6px;
-  font-size: calc(var(--default-fz) * 2.1428); /* 25px */
 }
 
 .company-right p {

@@ -40,7 +40,6 @@
 /* layout */
 * {
   box-sizing: border-box;
-  white-space: nowrap;
   word-break: keep-all;
 }
 
@@ -278,7 +277,7 @@ h6 {
   left: 50%;
   bottom: 24px;
   transform: translateX(-50%);
-  position: absolute;
+  position: fixed;
 }
 
 .sm-btn {

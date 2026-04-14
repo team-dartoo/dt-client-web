@@ -18,9 +18,7 @@ const Begin = () => {
   }
 
   const handleGoLogin = () => {
-    navigate("/login", {
-      state: { from: location.state?.from },
-    });
+    navigate("/login");
   };
 
   return (
