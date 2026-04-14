@@ -21,6 +21,7 @@ import Search from "../pages/Main/Search";
 
 import Bookmark from "../pages/Bookmark/Bookmark";
 import Chatbot from "../pages/Chatbot/Chatbot";
+import { ChatProvider } from "../contexts/ChatProvider";
 
 import Notification from "../pages/Notification/Notification";
 import Setting from "../pages/Notification/Setting";
@@ -148,9 +149,11 @@ const MobileApp = () => {
               path="/chatbot"
               element={
                 <PrivateRoute>
-                  <MotionPage isBack={isBack}>
-                    <Chatbot />
-                  </MotionPage>
+                  <ChatProvider>
+                    <MotionPage isBack={isBack}>
+                      <Chatbot />
+                    </MotionPage>
+                  </ChatProvider>
                 </PrivateRoute>
               }
             />
