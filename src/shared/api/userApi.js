@@ -108,12 +108,21 @@ const getCurrentEmailFromToken = () => {
   return decodeJwtPayload(token)?.sub || "";
 };
 
+// TODO(user-api): 프론트의 preference/settings naming이 backend 의미와 뒤바뀌어 있음.
+// 현재는 기존 화면/Provider를 깨지 않기 위해 userApi에서 교차 매핑으로 흡수한다.
+// 추후 UserProvider 및 관련 페이지 naming을 backend 의미(agreed/preference)에 맞게 정리하면,
+// getPreference/updatePreference -> /settings/me/preference
+// getUserSettings/updateUserSettings -> /settings/me/agreed
+// 형태로 다시 바로잡는 것이 좋다.
 const normalizePlanResponse = (data) => ({
   ...data,
   plan_expire_at: data?.plan_expire_at ?? data?.planExpireAt ?? null,
   plan_status: data?.plan_status ?? data?.planStatus ?? null,
 });
 
+// TODO(user-api): Premium.jsx가 아직 backend 계약(action/plan/duration)을 직접 표현하지 못해
+// userApi에서 legacy payload를 PlanUpdateRequest로 번역하고 있음.
+// 추후 페이지/Provider가 실제 계약을 직접 보내도록 정리하면 이 변환 레이어를 단순화할 수 있다.
 const normalizePlanUpdatePayload = (planData = {}) => {
   if (planData.action) {
     return {
