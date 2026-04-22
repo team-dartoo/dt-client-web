@@ -1,10 +1,11 @@
 // src/context/AuthProvider.jsx
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AuthContext } from "./AuthContext";
 import { authApi } from "../shared/api/authApi";
 
 export const AuthProvider = ({ children }) => {
+  const refreshPromiseRef = useRef(null);
   const [authUser, setAuthUser] = useState(null);
   const [accessToken, setAccessTokenState] = useState(
     authApi.getStoredAccessToken() || null,
@@ -91,16 +92,32 @@ export const AuthProvider = ({ children }) => {
 
   // 토큰 재발급
   const refresh = useCallback(async () => {
+    if (refreshPromiseRef.current) {
+      return refreshPromiseRef.current;
+    }
+
+    const pending = (async () => {
+      try {
+        setError(null);
+
+        const data = await authApi.refresh();
+        applyAuthData(data);
+
+        return data;
+      } catch (err) {
+        clearAuthState();
+        setError(err.message || "토큰 재발급에 실패했습니다.");
+        throw err;
+      } finally {
+        refreshPromiseRef.current = null;
+      }
+    })();
+
+    refreshPromiseRef.current = pending;
+
     try {
-      setError(null);
-
-      const data = await authApi.refresh();
-      applyAuthData(data);
-
-      return data;
+      return await pending;
     } catch (err) {
-      clearAuthState();
-      setError(err.message || "토큰 재발급에 실패했습니다.");
       throw err;
     }
   }, [applyAuthData, clearAuthState]);

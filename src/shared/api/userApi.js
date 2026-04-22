@@ -4,7 +4,10 @@
 
 import { authApi } from "./authApi";
 
-const USE_MOCK = true;
+const USE_MOCK = import.meta.env.VITE_USE_REAL_USER !== "true";
+const USER_SERVICE_BASE =
+  import.meta.env.VITE_USER_SERVICE_BASE_URL || "http://localhost:9804";
+const USER_BASE = `${USER_SERVICE_BASE}/api/users`;
 
 // 가상 유저 1명
 let mockUserProfile = {
@@ -53,6 +56,93 @@ const requireAuth = () => {
   return token;
 };
 
+const request = async (path, options = {}) => {
+  const token = requireAuth();
+
+  const res = await fetch(`${USER_BASE}${path}`, {
+    credentials: "include",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      ...(options.headers || {}),
+    },
+  });
+
+  return res;
+};
+
+const parseErrorResponse = async (res, defaultMessage) => {
+  try {
+    const data = await res.json();
+    const message =
+      data?.message || data?.errorMessage || data?.error || defaultMessage;
+    const error = new Error(message);
+    error.status = res.status;
+    error.code = data?.code || data?.errorCode || null;
+    throw error;
+  } catch (err) {
+    if (err instanceof SyntaxError) {
+      const error = new Error(defaultMessage);
+      error.status = res.status;
+      throw error;
+    }
+    throw err;
+  }
+};
+
+const decodeJwtPayload = (token) => {
+  try {
+    const base64Payload = token.split(".")[1];
+    const normalized = base64Payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), "=");
+    return JSON.parse(atob(padded));
+  } catch {
+    return null;
+  }
+};
+
+const getCurrentEmailFromToken = () => {
+  const token = authApi.getStoredAccessToken();
+  if (!token) return "";
+  return decodeJwtPayload(token)?.sub || "";
+};
+
+// TODO(user-api): 프론트의 preference/settings naming이 backend 의미와 뒤바뀌어 있음.
+// 현재는 기존 화면/Provider를 깨지 않기 위해 userApi에서 교차 매핑으로 흡수한다.
+// 추후 UserProvider 및 관련 페이지 naming을 backend 의미(agreed/preference)에 맞게 정리하면,
+// getPreference/updatePreference -> /settings/me/preference
+// getUserSettings/updateUserSettings -> /settings/me/agreed
+// 형태로 다시 바로잡는 것이 좋다.
+const normalizePlanResponse = (data) => ({
+  ...data,
+  plan_expire_at: data?.plan_expire_at ?? data?.planExpireAt ?? null,
+  plan_status: data?.plan_status ?? data?.planStatus ?? null,
+});
+
+// TODO(user-api): Premium.jsx가 아직 backend 계약(action/plan/duration)을 직접 표현하지 못해
+// userApi에서 legacy payload를 PlanUpdateRequest로 번역하고 있음.
+// 추후 페이지/Provider가 실제 계약을 직접 보내도록 정리하면 이 변환 레이어를 단순화할 수 있다.
+const normalizePlanUpdatePayload = (planData = {}) => {
+  if (planData.action) {
+    return {
+      action: planData.action,
+      ...(planData.plan ? { plan: planData.plan } : {}),
+      ...(planData.duration ? { duration: planData.duration } : {}),
+    };
+  }
+
+  if (planData.plan === "PREMIUM") {
+    return {
+      action: "SUBSCRIBE",
+      plan: "PREMIUM",
+      duration: "MONTHLY",
+    };
+  }
+
+  return planData;
+};
+
 export const userApi = {
   // 프로필 정보 조회
   async getUserProfile() {
@@ -70,21 +160,15 @@ export const userApi = {
     }
 
     // TODO 실제 API
-    /*
-    const token = authApi.getStoredAccessToken();
-
-    const res = await fetch("/api/users/info", {
+    const res = await request("/info", {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
     });
 
-    if (!res.ok) throw new Error("프로필 조회 실패");
+    if (!res.ok) {
+      await parseErrorResponse(res, "프로필 조회 실패");
+    }
 
     return res.json();
-    */
   },
 
   // 프로필 업데이트 (닉네임만 변경)
@@ -108,26 +192,16 @@ export const userApi = {
       });
     }
 
-    // TODO 실제 API
-    /*
-    const token = authApi.getStoredAccessToken();
-
-    const res = await fetch("/api/users/update", {
+    const res = await request("/update", {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        nickname,
-      }),
+      body: JSON.stringify({ nickname }),
     });
 
-    if (!res.ok) throw new Error("프로필 업데이트 실패");
+    if (!res.ok) {
+      await parseErrorResponse(res, "프로필 업데이트 실패");
+    }
 
     return res.json();
-    */
   },
 
   // 비밀번호 변경
@@ -152,27 +226,16 @@ export const userApi = {
       });
     }
 
-    // TODO 실제 API
-    /*
-    const token = authApi.getStoredAccessToken();
-
-    const res = await fetch("/api/users/password", {
+    const res = await request("/password", {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        currentPassword,
-        newPassword,
-      }),
+      body: JSON.stringify({ currentPassword, newPassword }),
     });
 
-    if (!res.ok) throw new Error("비밀번호 변경 실패");
+    if (!res.ok) {
+      await parseErrorResponse(res, "비밀번호 변경 실패");
+    }
 
     return true;
-    */
   },
 
   // 회원 탈퇴
@@ -203,26 +266,16 @@ export const userApi = {
       });
     }
 
-    // TODO 실제 API
-    /*
-    const token = authApi.getStoredAccessToken();
-
-    const res = await fetch("/api/users", {
+    const res = await request("", {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        userEmail,
-      }),
+      body: JSON.stringify({ userEmail }),
     });
 
-    if (!res.ok) throw new Error("회원 탈퇴 실패");
+    if (!res.ok) {
+      await parseErrorResponse(res, "회원 탈퇴 실패");
+    }
 
     return true;
-    */
   },
 
   // 사용자 동의 정보 조회
@@ -240,22 +293,15 @@ export const userApi = {
       });
     }
 
-    // TODO 실제 API
-    /*
-    const token = authApi.getStoredAccessToken();
-
-    const res = await fetch("/api/users/settings/me/preference", {
+    const res = await request("/settings/me/agreed", {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
     });
 
-    if (!res.ok) throw new Error("사용자 동의 정보 조회 실패");
+    if (!res.ok) {
+      await parseErrorResponse(res, "사용자 동의 정보 조회 실패");
+    }
 
     return res.json();
-    */
   },
 
   // 사용자 동의 정보 수정
@@ -279,24 +325,16 @@ export const userApi = {
       });
     }
 
-    // TODO 실제 API
-    /*
-    const token = authApi.getStoredAccessToken();
-
-    const res = await fetch("/api/users/settings/me/preference", {
+    const res = await request("/settings/me/agreed", {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
       body: JSON.stringify(preferenceData),
     });
 
-    if (!res.ok) throw new Error("사용자 동의 정보 수정 실패");
+    if (!res.ok) {
+      await parseErrorResponse(res, "사용자 동의 정보 수정 실패");
+    }
 
     return res.json();
-    */
   },
 
   // 사용자 설정 조회
@@ -314,22 +352,15 @@ export const userApi = {
       });
     }
 
-    // TODO 실제 API
-    /*
-    const token = authApi.getStoredAccessToken();
-
-    const res = await fetch("/api/users/settings/me/agreed", {
+    const res = await request("/settings/me/preference", {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
     });
 
-    if (!res.ok) throw new Error("사용자 설정 조회 실패");
+    if (!res.ok) {
+      await parseErrorResponse(res, "사용자 설정 조회 실패");
+    }
 
     return res.json();
-    */
   },
 
   // 사용자 설정 수정
@@ -353,24 +384,16 @@ export const userApi = {
       });
     }
 
-    // TODO 실제 API
-    /*
-    const token = authApi.getStoredAccessToken();
-
-    const res = await fetch("/api/users/settings/me/agreed", {
+    const res = await request("/settings/me/preference", {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
       body: JSON.stringify(settingsData),
     });
 
-    if (!res.ok) throw new Error("사용자 설정 수정 실패");
+    if (!res.ok) {
+      await parseErrorResponse(res, "사용자 설정 수정 실패");
+    }
 
     return res.json();
-    */
   },
 
   // 기존 계정에 OAuth 연결
@@ -407,43 +430,13 @@ export const userApi = {
       });
     }
 
-    // TODO 실제 API
-    /*
-    주의:
-    이 API는 일반 JSON API처럼 끝나는 구조가 아니라
-    302 redirect + linkToken 쿠키 설정 + OAuth 인증 페이지 이동 흐름임.
-
-    Response 예시:
-    - Status: 302 Found
-    - Location: /oauth2/authorization/{provider}
-    - Set-Cookie: linkToken={token}; HttpOnly; Secure; SameSite=None; Path=/; Max-Age={ttl}
-
-    Redirect 이후 OAuth 콜백 처리 후 최종 결과 예시:
-    {
-      "isLinked": true,
-      "provider": "GOOGLE"
-    }
-
-    실제 연동 시에는 fetch로 JSON을 바로 받기보다,
-    브라우저 이동(window.location.href) 또는 백엔드 리다이렉트 흐름에 맞춰 구현 필요
-    */
-
-    /*
-    const token = authApi.getStoredAccessToken();
-
-    const res = await fetch(`/api/users/auth/link/${provider}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
-      redirect: "follow",
-    });
-
-    if (!res.ok) throw new Error("OAuth 계정 연결 실패");
-
-    return res.json();
-    */
+    const token = requireAuth();
+    window.location.href = `${USER_BASE}/auth/link/${provider}`;
+    return {
+      started: true,
+      token,
+      provider: provider.toUpperCase(),
+    };
   },
 
   // 온보딩 완료 후 회원 정보 초기화
@@ -470,36 +463,24 @@ export const userApi = {
       });
     }
 
-    // TODO 실제 API
-    /*
-    현재 request / response 명세 부족.
-    백엔드 명세 확인 후 아래 항목 반영 필요:
-    - 요청 body 구조
-    - 응답 body 구조
-    - 온보딩 완료 후 nickname / profile / password 반영 범위
-    - 성공 시 로그인 상태 유지 여부
+    const payload = {
+      nickname: initData.nickname,
+      email: initData.email || getCurrentEmailFromToken(),
+      password: initData.password,
+      ...(initData.birthday ? { birthday: initData.birthday } : {}),
+      ...(initData.gender ? { gender: initData.gender } : {}),
+    };
 
-    예상 엔드포인트:
-    POST /api/users/onboarding/complete
-    */
-
-    /*
-    const token = authApi.getStoredAccessToken();
-
-    const res = await fetch("/api/users/onboarding/complete", {
+    const res = await request("/onboarding/complete", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
-      body: JSON.stringify(initData),
+      body: JSON.stringify(payload),
     });
 
-    if (!res.ok) throw new Error("온보딩 완료 처리 실패");
+    if (!res.ok) {
+      await parseErrorResponse(res, "온보딩 완료 처리 실패");
+    }
 
     return res.json();
-    */
   },
 
   // 플랜 정보 조회
@@ -520,22 +501,15 @@ export const userApi = {
       });
     }
 
-    // TODO 실제 API
-    /*
-    const token = authApi.getStoredAccessToken();
-
-    const res = await fetch("/api/users/plan", {
+    const res = await request("/plan", {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
     });
 
-    if (!res.ok) throw new Error("플랜 정보 조회 실패");
+    if (!res.ok) {
+      await parseErrorResponse(res, "플랜 정보 조회 실패");
+    }
 
-    return res.json();
-    */
+    return normalizePlanResponse(await res.json());
   },
 
   // 플랜 정보 수정
@@ -568,32 +542,28 @@ export const userApi = {
       });
     }
 
-    // TODO 실제 API
-    /*
-    request, response 구조 동일
-    {
-      "plan": "PREMIUM",
-      "plan_expire_at": "2026-02-10",
-      "plan_status": "ACTIVE"
-    }
-    */
+    const payload = normalizePlanUpdatePayload(planData);
 
-    /*
-    const token = authApi.getStoredAccessToken();
-
-    const res = await fetch("/api/users/plan", {
+    const res = await request("/plan", {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
-      body: JSON.stringify(planData),
+      body: JSON.stringify(payload),
     });
 
-    if (!res.ok) throw new Error("플랜 정보 수정 실패");
+    if (!res.ok) {
+      await parseErrorResponse(res, "플랜 정보 수정 실패");
+    }
 
-    return res.json();
-    */
+    const data = await res.json();
+
+    if (data.accessToken) {
+      localStorage.setItem("accessToken", data.accessToken);
+    }
+
+    return normalizePlanResponse({
+      ...data,
+      plan: data.plan,
+      planExpireAt: data.expireAt,
+      planStatus: data.status,
+    });
   },
 };

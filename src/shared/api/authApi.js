@@ -2,8 +2,9 @@ const ACCESS_TOKEN_KEY = "accessToken";
 const DEVICE_ID_KEY = "deviceId";
 
 const USE_MOCK = import.meta.env.VITE_USE_REAL_AUTH !== "true";
-const AUTH_BASE =
-  import.meta.env.VITE_AUTH_BASE_URL || "http://localhost:9804/api/auth";
+const USER_SERVICE_BASE =
+  import.meta.env.VITE_USER_SERVICE_BASE_URL || "http://localhost:9804";
+const AUTH_BASE = `${USER_SERVICE_BASE}/api/auth`;
 
 let mockUsers = [
   {

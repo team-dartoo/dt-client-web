@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { ChatContext } from "./ChatContext";
 import { chatApi } from "../shared/api/chatApi";
 import { useAuth } from "./useAuth";
+import { createAuthRetryRunner } from "../shared/auth/withAuthRetry";
 
 export const ChatProvider = ({ children }) => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, refresh } = useAuth();
 
   const [conversations, setConversations] = useState([]);
   const [activeId, setActiveId] = useState(null);
@@ -16,33 +17,38 @@ export const ChatProvider = ({ children }) => {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleAuthError = useCallback(
-    (err) => {
-      if (err.status === 401) {
-        setError("로그인이 만료되었습니다. 다시 로그인해주세요.");
-        logout();
-        navigate("/", { replace: true });
-        return true;
-      }
-      return false;
-    },
-    [logout, navigate],
+  const handleAuthFailure = useCallback(async () => {
+    setError("로그인이 만료되었습니다. 다시 로그인해주세요.");
+    try {
+      await logout();
+    } finally {
+      navigate("/", { replace: true });
+    }
+  }, [logout, navigate]);
+
+  const runWithRefreshRetry = useMemo(
+    () =>
+      createAuthRetryRunner({
+        refresh,
+        onAuthFailure: handleAuthFailure,
+      }),
+    [refresh, handleAuthFailure],
   );
 
   const loadConversations = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const list = await chatApi.listConversations();
+      const list = await runWithRefreshRetry(() => chatApi.listConversations());
       setConversations(list);
     } catch (err) {
-      if (!handleAuthError(err)) {
+      if (err.status !== 401) {
         setError(err.message || "대화 목록을 불러오지 못했습니다.");
       }
     } finally {
       setLoading(false);
     }
-  }, [handleAuthError]);
+  }, [runWithRefreshRetry]);
 
   useEffect(() => {
     loadConversations();
@@ -53,40 +59,40 @@ export const ChatProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       try {
-        const detail = await chatApi.getConversation(id);
+        const detail = await runWithRefreshRetry(() => chatApi.getConversation(id));
         setActiveId(id);
         setTitle(detail.title || "");
         setMessages(detail.messages || []);
       } catch (err) {
-        if (!handleAuthError(err)) {
+        if (err.status !== 401) {
           setError(err.message || "대화를 불러오지 못했습니다.");
         }
       } finally {
         setLoading(false);
       }
     },
-    [handleAuthError],
+    [runWithRefreshRetry],
   );
 
   const createConversation = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const conv = await chatApi.createConversation();
+      const conv = await runWithRefreshRetry(() => chatApi.createConversation());
       setActiveId(conv.id);
       setTitle(conv.title || "새 대화");
       setMessages([]);
-      loadConversations();
+      await loadConversations();
       return conv;
     } catch (err) {
-      if (!handleAuthError(err)) {
+      if (err.status !== 401) {
         setError(err.message || "대화 생성에 실패했습니다.");
       }
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [handleAuthError, loadConversations]);
+  }, [runWithRefreshRetry, loadConversations]);
 
   const sendMessage = useCallback(
     async (text) => {
@@ -98,22 +104,24 @@ export const ChatProvider = ({ children }) => {
       setError(null);
 
       try {
-        const result = await chatApi.sendMessage(activeId, text);
+        const result = await runWithRefreshRetry(() =>
+          chatApi.sendMessage(activeId, text),
+        );
         setMessages(result.messages || []);
         if (result.conversation?.title) {
           setTitle(result.conversation.title);
         }
       } catch (err) {
-        if (!handleAuthError(err)) {
+        if (err.status !== 401) {
           setError(err.message || "메시지 전송에 실패했습니다.");
           setMessages((prev) => prev.slice(0, -1));
-          throw err;
         }
+        throw err;
       } finally {
         setSending(false);
       }
     },
-    [activeId, handleAuthError],
+    [activeId, runWithRefreshRetry],
   );
 
   const resetActive = useCallback(() => {
