@@ -1,6 +1,215 @@
-const USE_MOCK = true;
+import { requireServiceBaseUrl } from "./serviceConfig";
+
+const USE_REAL_DISCLOSURE =
+  import.meta.env.VITE_USE_REAL_DISCLOSURE === "true";
+const USE_MOCK = !USE_REAL_DISCLOSURE;
+let disclosureBase = null;
+let disclosureWorkerApiKey = null;
 
 const wait = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const getDisclosureBase = () => {
+  if (disclosureBase) {
+    return disclosureBase;
+  }
+
+  const disclosureServiceBase = requireServiceBaseUrl(
+    "VITE_DISCLOSURE_SERVICE_BASE_URL",
+    "Disclosure service",
+  );
+
+  disclosureBase = `${disclosureServiceBase}/api/disclosures`;
+  return disclosureBase;
+};
+
+const getDisclosureWorkerApiKey = () => {
+  if (disclosureWorkerApiKey !== null) {
+    return disclosureWorkerApiKey;
+  }
+
+  const configuredKey = import.meta.env.VITE_DISCLOSURE_WORKER_API_KEY;
+  disclosureWorkerApiKey = typeof configuredKey === "string" ? configuredKey.trim() : "";
+  return disclosureWorkerApiKey;
+};
+
+const isLocalDisclosureService = () => {
+  try {
+    const baseUrl = new URL(getDisclosureBase());
+    return ["localhost", "127.0.0.1"].includes(baseUrl.hostname);
+  } catch (error) {
+    void error;
+    return false;
+  }
+};
+
+const buildUrl = (path = "", params = {}) => {
+  const query = new URLSearchParams(
+    Object.entries(params).filter(([, value]) => value !== undefined && value !== null),
+  ).toString();
+
+  return `${getDisclosureBase()}${path}${query ? `?${query}` : ""}`;
+};
+
+const parseResponseBody = async (res) => {
+  const contentType = res.headers.get("content-type") || "";
+
+  if (!contentType.includes("application/json")) {
+    return null;
+  }
+
+  try {
+    return await res.json();
+  } catch (error) {
+    void error;
+    return null;
+  }
+};
+
+const request = async (path = "", params = {}, options = {}) => {
+  const { method = "GET", body, headers = {} } = options;
+
+  const res = await fetch(buildUrl(path, params), {
+    method,
+    credentials: "include",
+    headers: {
+      ...(body ? { "Content-Type": "application/json" } : {}),
+      ...headers,
+    },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  });
+
+  const data = await parseResponseBody(res);
+
+  if (res.ok) {
+    return data;
+  }
+
+  let message = "공시 정보를 불러오지 못했습니다.";
+
+  message = data?.message || data?.detail || data?.error || message;
+
+  const error = new Error(message);
+  error.status = res.status;
+  throw error;
+};
+
+const normalizeSummary = (summary, fallbackSentimentTag = null) => {
+  if (!summary && !fallbackSentimentTag) {
+    return null;
+  }
+
+  return {
+    data: Array.isArray(summary?.data) ? summary.data : null,
+    workerVersion: summary?.workerVersion ?? null,
+    summarizedAt: summary?.summarizedAt ?? null,
+    sentimentTag: summary?.sentimentTag ?? fallbackSentimentTag ?? null,
+  };
+};
+
+const normalizeDisclosure = (item = {}) => ({
+  ...item,
+  tags: Array.isArray(item.tags) ? item.tags : [],
+  company: item.company
+    ? {
+        corpCode: item.company.corpCode,
+        corpName: item.company.corpName,
+        stockCode: item.company.stockCode ?? null,
+        corpCls: item.company.corpCls ?? "E",
+      }
+    : {
+        corpCode: "",
+        corpName: "",
+        stockCode: null,
+        corpCls: "E",
+      },
+  summary: normalizeSummary(item.summary),
+});
+
+const normalizeDisclosureListResponse = (data = {}) => ({
+  totalCount: data.totalCount ?? 0,
+  page: data.page ?? 1,
+  limit: data.limit ?? 20,
+  disclosures: Array.isArray(data.disclosures)
+    ? data.disclosures.map(normalizeDisclosure)
+    : [],
+});
+
+const normalizeCompanyListItem = (company = {}) => ({
+  ...company,
+  stockCode: company.stockCode ?? null,
+  corpCls: company.corpCls ?? "E",
+  tags: Array.isArray(company.tags) ? company.tags : [],
+  latestDisclosureDate: company.latestDisclosureDate ?? null,
+});
+
+const normalizeCompanyListResponse = (data = {}) => ({
+  totalCount: data.totalCount ?? 0,
+  page: data.page ?? 1,
+  limit: data.limit ?? 20,
+  companies: Array.isArray(data.companies)
+    ? data.companies.map(normalizeCompanyListItem)
+    : [],
+});
+
+const normalizeCompanySearchResponse = (data = {}) => ({
+  query: data.query ?? "",
+  totalCount: data.totalCount ?? 0,
+  results: Array.isArray(data.results)
+    ? data.results.map(normalizeCompanyListItem)
+    : [],
+});
+
+const normalizeCompanyDetailResponse = (data = {}) => ({
+  ...normalizeCompanyListItem(data),
+  disclosures: {
+    items: Array.isArray(data.disclosures?.items)
+      ? data.disclosures.items.map((item) => ({
+          ...item,
+          tags: Array.isArray(item.tags) ? item.tags : [],
+          remark: item.remark ?? null,
+          summary: normalizeSummary(item.summary, item.sentimentTag),
+          originalDocumentUrl: item.originalDocumentUrl ?? "",
+        }))
+      : [],
+  },
+});
+
+const FIXTURE_DISCLOSURES = [
+  {
+    id: "20250925800487",
+    payload: {
+      reportName: "기업설명회(IR)개최(안내공시)",
+      corpCode: "00161125",
+      corpName: "한온시스템",
+      stockCode: "018880",
+      corpCls: "Y",
+      flrName: "한온시스템",
+      receptionDate: "2025-09-25T00:00:00Z",
+      remark: "유",
+      minioObjectName: "documents/20250925800487.pdf",
+      contentType: "application/pdf",
+      fileSize: 1048576,
+      tags: ["IR", "기업설명회"],
+    },
+  },
+  {
+    id: "20250924800123",
+    payload: {
+      reportName: "분기보고서 (2025.09)",
+      corpCode: "00126380",
+      corpName: "삼성전자",
+      stockCode: "005930",
+      corpCls: "Y",
+      flrName: "삼성전자",
+      receptionDate: "2025-09-24T00:00:00Z",
+      remark: null,
+      minioObjectName: "documents/20250924800123.pdf",
+      contentType: "application/pdf",
+      fileSize: 1048576,
+      tags: ["분기보고서", "실적"],
+    },
+  },
+];
 
 // =========================
 // 더미 데이터
@@ -420,16 +629,8 @@ export const disclosureApi = {
       };
     }
 
-    /*
-    const query = new URLSearchParams(params).toString();
-    const res = await fetch(`/api/disclosures${query ? `?${query}` : ""}`, {
-      method: "GET",
-      credentials: "include",
-    });
-
-    if (!res.ok) throw new Error("공시 목록 조회 실패");
-    return res.json();
-    */
+    const data = await request("", params);
+    return normalizeDisclosureListResponse(data);
   },
 
   // 단일 공시 조회
@@ -447,15 +648,8 @@ export const disclosureApi = {
       return found;
     }
 
-    /*
-    const res = await fetch(`/api/disclosures/${id}`, {
-      method: "GET",
-      credentials: "include",
-    });
-
-    if (!res.ok) throw new Error("단일 공시 조회 실패");
-    return res.json();
-    */
+    const data = await request(`/${id}`);
+    return normalizeDisclosure(data);
   },
 
   // 공시 원문 URL 조회
@@ -478,15 +672,7 @@ export const disclosureApi = {
       };
     }
 
-    /*
-    const res = await fetch(`/api/disclosures/${id}/download`, {
-      method: "GET",
-      credentials: "include",
-    });
-
-    if (!res.ok) throw new Error("공시 원문 URL 조회 실패");
-    return res.json();
-    */
+    return request(`/${id}/download`);
   },
 
   // 기업 목록 조회
@@ -510,20 +696,12 @@ export const disclosureApi = {
       };
     }
 
-    /*
-    const query = new URLSearchParams(params).toString();
-    const res = await fetch(`/api/disclosures/company${query ? `?${query}` : ""}`, {
-      method: "GET",
-      credentials: "include",
-    });
-
-    if (!res.ok) throw new Error("기업 목록 조회 실패");
-    return res.json();
-    */
+    const data = await request("/company", params);
+    return normalizeCompanyListResponse(data);
   },
 
   // 기업 검색
-  async searchCompanies(keyword = "") {
+  async searchCompanies(keyword = "", params = {}) {
     if (USE_MOCK) {
       await wait(300);
 
@@ -584,20 +762,26 @@ export const disclosureApi = {
       };
     }
 
-    /*
-    const query = new URLSearchParams({ keyword }).toString();
-    const res = await fetch(`/api/disclosures/company/search?${query}`, {
-      method: "GET",
-      credentials: "include",
-    });
+    const trimmedKeyword = keyword.trim();
 
-    if (!res.ok) throw new Error("기업 검색 실패");
-    return res.json();
-    */
+    if (!trimmedKeyword) {
+      return {
+        query: keyword,
+        totalCount: 0,
+        results: [],
+      };
+    }
+
+    const data = await request("/company/search", {
+      word: trimmedKeyword,
+      tags: params.tags,
+      limit: params.limit,
+    });
+    return normalizeCompanySearchResponse(data);
   },
 
   // 기업 상세 조회
-  async getCompanyDetail(corpCode) {
+  async getCompanyDetail(corpCode, params = {}) {
     if (USE_MOCK) {
       await wait(300);
 
@@ -611,14 +795,70 @@ export const disclosureApi = {
       return found;
     }
 
-    /*
-    const res = await fetch(`/api/disclosures/company/${corpCode}`, {
-      method: "GET",
-      credentials: "include",
+    const data = await request(`/company/${corpCode}`, {
+      disclosurePage: params.disclosurePage ?? params.page,
+      disclosureLimit: params.disclosureLimit ?? params.limit,
+      tags: params.tags,
     });
+    return normalizeCompanyDetailResponse(data);
+  },
 
-    if (!res.ok) throw new Error("기업 상세 조회 실패");
-    return res.json();
-    */
+  async bootstrapLocalFixtures({ force = false } = {}) {
+    if (USE_MOCK) {
+      return {
+        bootstrapped: false,
+        skipped: true,
+        reason: "mock-mode",
+      };
+    }
+
+    if (!isLocalDisclosureService()) {
+      return {
+        bootstrapped: false,
+        skipped: true,
+        reason: "non-local-disclosure-service",
+      };
+    }
+
+    const workerApiKey = getDisclosureWorkerApiKey();
+
+    if (!workerApiKey) {
+      throw new Error(
+        "로컬 공시 fixture 부트스트랩을 위해 VITE_DISCLOSURE_WORKER_API_KEY가 필요합니다.",
+      );
+    }
+
+    if (!force) {
+      const existing = await request("", { page: 1, limit: 1 });
+      if ((existing?.totalCount ?? 0) > 0) {
+        return {
+          bootstrapped: false,
+          skipped: true,
+          reason: "existing-disclosures",
+        };
+      }
+    }
+
+    const seeded = [];
+
+    for (const fixture of FIXTURE_DISCLOSURES) {
+      const result = await request(`/${fixture.id}`, {}, {
+        method: "PUT",
+        body: fixture.payload,
+        headers: {
+          "X-Worker-API-Key": workerApiKey,
+        },
+      });
+
+      seeded.push({
+        id: result?._id ?? fixture.id,
+        created: result?.created ?? false,
+      });
+    }
+
+    return {
+      bootstrapped: true,
+      seeded,
+    };
   },
 };
