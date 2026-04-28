@@ -2,10 +2,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { SearchContext } from "./SearchContext";
 import { searchApi } from "../shared/api/searchApi";
+import { useAuth } from "./useAuth";
 
 const popularChips = ["삼성전자", "SK하이닉스", "카카오"];
 
 export default function SearchProvider({ children }) {
+  const { isAuthenticated, initializing } = useAuth();
+
   const [searchResults, setSearchResults] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
@@ -96,8 +99,11 @@ export default function SearchProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    if (initializing) return;
+    if (!isAuthenticated) return;
+
     fetchSearchHistories();
-  }, [fetchSearchHistories]);
+  }, [initializing, isAuthenticated, fetchSearchHistories]);
 
   const value = useMemo(
     () => ({
