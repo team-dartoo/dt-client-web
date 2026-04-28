@@ -1,26 +1,22 @@
-// 북마크 관련 API
-// 현재는 MOCK 데이터 사용
-// 실제 API 연동 시 TODO 부분 사용
-
 import { authApi } from "./authApi";
+import { getServiceBaseUrl } from "./serviceConfig";
 
-const USE_MOCK = true;
+const USE_MOCK = import.meta.env.VITE_USE_REAL_USER !== "true";
+const wait = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// 더미 데이터
-let mockCorpList = [
-  {
-    corpCode: "00126380",
-    corpName: "삼성전자",
-    createdAt: "2026-02-09T12:30:00Z",
-  },
-  {
-    corpCode: "00161125",
-    corpName: "한온시스템",
-    createdAt: "2026-02-10T12:30:00Z",
-  },
+const USER_SERVICE_BASE = getServiceBaseUrl(
+  "VITE_USER_SERVICE_BASE_URL",
+  "http://localhost:9804",
+);
+const BOOKMARK_BASE = `${USER_SERVICE_BASE}/api/users/bookmarks`;
+
+let mockBookmarks = [
+  { corpCode: "00126380", corpName: "삼성전자" },
+  { corpCode: "00253801", corpName: "SK하이닉스" },
+  { corpCode: "00102486", corpName: "LG에너지솔루션" },
+  { corpCode: "00164742", corpName: "삼성바이오로직스" },
 ];
 
-// 로그인 체크
 const requireAuth = () => {
   const token = authApi.getStoredAccessToken();
 
@@ -31,29 +27,31 @@ const requireAuth = () => {
   return token;
 };
 
+const parseErrorResponse = async (res, defaultMessage) => {
+  try {
+    const data = await res.json();
+    const message =
+      data?.message || data?.errorMessage || data?.error || defaultMessage;
+    const error = new Error(message);
+    error.status = res.status;
+    error.code = data?.code || data?.errorCode || null;
+    throw error;
+  } catch (err) {
+    if (err.status) throw err;
+    throw new Error(defaultMessage);
+  }
+};
+
 export const bookmarkApi = {
   async getBookmarks() {
     if (USE_MOCK) {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          try {
-            requireAuth();
-
-            resolve({
-              corpList: mockCorpList,
-            });
-          } catch (err) {
-            reject(err);
-          }
-        }, 300);
-      });
+      await wait();
+      return { corpList: [...mockBookmarks] };
     }
 
-    // TODO 실제 API
-    /*
     const token = requireAuth();
 
-    const res = await fetch("/api/users/bookmarks", {
+    const res = await fetch(BOOKMARK_BASE, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -61,44 +59,27 @@ export const bookmarkApi = {
       credentials: "include",
     });
 
-    if (!res.ok) throw new Error("북마크 조회 실패");
+    if (!res.ok) {
+      await parseErrorResponse(res, "북마크 조회 실패");
+    }
 
     return res.json();
-    */
   },
 
   async addBookmark(corpCode, corpName) {
     if (USE_MOCK) {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          try {
-            requireAuth();
+      await wait();
+      const existing = mockBookmarks.find((b) => b.corpCode === corpCode);
+      if (existing) return existing;
 
-            const newItem = {
-              corpCode,
-              corpName,
-              createdAt: new Date().toISOString(),
-            };
-
-            const exists = mockCorpList.some((c) => c.corpCode === corpCode);
-
-            if (!exists) {
-              mockCorpList = [...mockCorpList, newItem];
-            }
-
-            resolve(newItem);
-          } catch (err) {
-            reject(err);
-          }
-        }, 300);
-      });
+      const newItem = { corpCode, corpName };
+      mockBookmarks.push(newItem);
+      return newItem;
     }
 
-    // TODO 실제 API
-    /*
     const token = requireAuth();
 
-    const res = await fetch("/api/users/bookmarks", {
+    const res = await fetch(BOOKMARK_BASE, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -111,33 +92,23 @@ export const bookmarkApi = {
       }),
     });
 
-    if (!res.ok) throw new Error("북마크 추가 실패");
+    if (!res.ok) {
+      await parseErrorResponse(res, "북마크 추가 실패");
+    }
 
     return res.json();
-    */
   },
 
   async removeBookmark(corpCode) {
     if (USE_MOCK) {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          try {
-            requireAuth();
-
-            mockCorpList = mockCorpList.filter((c) => c.corpCode !== corpCode);
-            resolve(true);
-          } catch (err) {
-            reject(err);
-          }
-        }, 300);
-      });
+      await wait();
+      mockBookmarks = mockBookmarks.filter((b) => b.corpCode !== corpCode);
+      return true;
     }
 
-    // TODO 실제 API
-    /*
     const token = requireAuth();
 
-    const res = await fetch(`/api/users/bookmarks/${corpCode}`, {
+    const res = await fetch(`${BOOKMARK_BASE}/${corpCode}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -145,9 +116,42 @@ export const bookmarkApi = {
       credentials: "include",
     });
 
-    if (!res.ok) throw new Error("북마크 삭제 실패");
+    if (!res.ok) {
+      await parseErrorResponse(res, "북마크 삭제 실패");
+    }
 
     return true;
-    */
+  },
+
+  async reorderBookmarks(corpCodes) {
+    if (USE_MOCK) {
+      await wait();
+      const listed = corpCodes
+        .map((code) => mockBookmarks.find((b) => b.corpCode === code))
+        .filter(Boolean);
+      const remaining = mockBookmarks.filter(
+        (b) => !corpCodes.includes(b.corpCode),
+      );
+      mockBookmarks = [...listed, ...remaining];
+      return true;
+    }
+
+    const token = requireAuth();
+
+    const res = await fetch(`${BOOKMARK_BASE}/reorder`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: "include",
+      body: JSON.stringify({ corpCodes }),
+    });
+
+    if (!res.ok) {
+      await parseErrorResponse(res, "북마크 순서 변경 실패");
+    }
+
+    return true;
   },
 };
