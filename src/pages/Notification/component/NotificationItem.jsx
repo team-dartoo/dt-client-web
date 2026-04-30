@@ -4,38 +4,30 @@ import { useNavigate } from "react-router-dom";
 import { useRelativeTime } from "../../../shared/hooks/useRelativeTime";
 
 const NotificationItem = ({
-  title, // 회사명
-  content, // 문자열 또는 객체
-  status, // "READ" | "UNREAD"
+  id,
+  type,
+  corpName,
+  corpCode,
+  title,
+  status,
   createdAt,
   readAt,
-  type, // "DISCLOSURE_UPDATE" | "AI_SUMMARY"
   disclosureId,
+  summaryLines,
 }) => {
   const { text, type: timeType } = useRelativeTime(createdAt);
   const navigate = useNavigate();
 
   const isAiSummary = type === "AI_SUMMARY";
   const isDisclosureUpdate = type === "DISCLOSURE_UPDATE";
-
   const iconClass = isAiSummary ? "alert-icon ai" : "alert-icon disclosure";
 
-  // content가 문자열일 수도 있고 객체일 수도 있어서 방어적으로 처리
-  const disclosureTitle =
-    typeof content === "object" && content?.disclosureTitle
-      ? content.disclosureTitle
-      : typeof content === "string"
-        ? content
-        : "[공시 제목]";
-
-  const summaryLines =
-    typeof content === "object" && Array.isArray(content?.summaryLines)
-      ? content.summaryLines
-      : [];
+  const displayName = corpName || title || "[알림]";
 
   const handleClick = () => {
-    if (!disclosureId) return;
-    navigate(`/disclosure/${disclosureId}`);
+    if (disclosureId) {
+      navigate(`/disclosure/${disclosureId}`);
+    }
   };
 
   return (
@@ -46,7 +38,7 @@ const NotificationItem = ({
 
       <section className="alert-right" onClick={handleClick}>
         <div className="alert-header">
-          <div className="company-name text-lg">{title}</div>
+          <div className="company-name text-lg">{displayName}</div>
 
           <div
             className={`alert-date text-xs ${
@@ -60,17 +52,17 @@ const NotificationItem = ({
         {isAiSummary && (
           <>
             <div className="alert-category text-base">
-              AI 요약 : {disclosureTitle}
+              AI 요약 : {title}
             </div>
 
-            {summaryLines.length > 0 ? (
+            {summaryLines && summaryLines.length > 0 ? (
               <ul className="alert-summary text-base">
                 {summaryLines.map((line, index) => (
                   <li key={index}>{line}</li>
                 ))}
               </ul>
             ) : (
-              <div className="alert-content text-base">{disclosureTitle}</div>
+              <div className="alert-content text-base">{title}</div>
             )}
           </>
         )}
@@ -78,10 +70,10 @@ const NotificationItem = ({
         {isDisclosureUpdate && (
           <>
             <div className="alert-category text-base">
-              공시 업데이트 : {disclosureTitle}
+              공시 업데이트 : {title}
             </div>
             <div className="alert-content text-base">
-              공시가 업데이트 되었습니다 : {disclosureTitle}
+              공시가 업데이트 되었습니다 : {title}
             </div>
           </>
         )}
