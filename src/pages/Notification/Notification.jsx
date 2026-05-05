@@ -1,7 +1,3 @@
-// api 목록
-// 사용자 설정 조회
-// 사용자 설정 수정
-
 import { React, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -18,8 +14,13 @@ import "./notification.css";
 const Notification = () => {
   const navigate = useNavigate();
 
-  const { notifications, loading, fetchNotifications, markAllAsRead } =
-    useNotification();
+  const {
+    notifications,
+    loading,
+    error,
+    fetchNotifications,
+    markAllAsRead,
+  } = useNotification();
 
   useEffect(() => {
     fetchNotifications();
@@ -46,23 +47,27 @@ const Notification = () => {
           </button>
         }
       />
-      {/* 최신순으로 알림 불러오기 필요 */}
 
       {loading ? (
         <Loading />
+      ) : error ? (
+        <div>알림을 불러오지 못했어요.</div>
       ) : notifications.length === 0 ? (
         <div>알림이 없어요.</div>
       ) : (
         notifications.map((item) => (
           <NotificationItem
             key={item.id}
+            id={item.id}
+            type={item.type}
+            corpName={item.corpName}
+            corpCode={item.corpCode}
             title={item.title}
-            content={item.content}
             status={item.status}
             createdAt={item.createdAt}
             readAt={item.readAt}
-            type={item.type}
             disclosureId={item._id}
+            summaryLines={item.summaryLines}
           />
         ))
       )}

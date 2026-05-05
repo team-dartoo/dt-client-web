@@ -1,11 +1,15 @@
-// src/apis/searchApi.js
-import { mockDisclosureListResponse } from "./disclosureApi";
+import { authApi } from "./authApi";
+import { disclosureApi } from "./disclosureApi";
+import { getServiceBaseUrl } from "./serviceConfig";
 
-const USE_MOCK = true;
+const USE_MOCK = import.meta.env.VITE_USE_REAL_USER !== "true";
 const wait = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const MAX_HISTORY = 20; // 최근 검색어 최대 20개 저장
-const HISTORY_EXPIRE_DAYS = 90; // 최근 90일만 유지
+const USER_SERVICE_BASE = getServiceBaseUrl(
+  "VITE_USER_SERVICE_BASE_URL",
+  "http://localhost:9804",
+);
+const SEARCH_HISTORY_BASE = `${USER_SERVICE_BASE}/api/users/search-histories`;
 
 let mockSearchHistoryList = [
   {
@@ -30,194 +34,85 @@ let mockSearchHistoryList = [
   },
 ];
 
-// 공시 mock 데이터에 있는 기업은 검색에서도 반드시 포함
-const extraCompanies = [
-  {
-    corpCode: "00356361",
-    corpName: "카카오",
-    stockCode: "035720",
-    corpCls: "Y",
-    disclosureCount: 210,
-    latestDisclosureDate: "2025-09-20T00:00:00Z",
-    tags: ["플랫폼", "사업보고서"],
-  },
-  {
-    corpCode: "01013517",
-    corpName: "카카오게임즈",
-    stockCode: "293490",
-    corpCls: "Y",
-    disclosureCount: 98,
-    latestDisclosureDate: "2025-09-18T00:00:00Z",
-    tags: ["게임", "분기보고서"],
-  },
-  {
-    corpCode: "01660985",
-    corpName: "카카오뱅크",
-    stockCode: "323410",
-    corpCls: "Y",
-    disclosureCount: 122,
-    latestDisclosureDate: "2025-09-17T00:00:00Z",
-    tags: ["금융", "실적"],
-  },
-  {
-    corpCode: "00164742",
-    corpName: "삼성SDI",
-    stockCode: "006400",
-    corpCls: "Y",
-    disclosureCount: 456,
-    latestDisclosureDate: "2025-09-24T00:00:00Z",
-    tags: ["분기보고서", "주주총회"],
-  },
-  {
-    corpCode: "00164800",
-    corpName: "삼성물산",
-    stockCode: "028260",
-    corpCls: "Y",
-    disclosureCount: 320,
-    latestDisclosureDate: "2025-09-23T00:00:00Z",
-    tags: ["IR", "건설"],
-  },
-  {
-    corpCode: "00164779",
-    corpName: "LG전자",
-    stockCode: "066570",
-    corpCls: "Y",
-    disclosureCount: 401,
-    latestDisclosureDate: "2025-09-19T00:00:00Z",
-    tags: ["가전", "실적"],
-  },
-];
+const requireAuth = () => {
+  const token = authApi.getStoredAccessToken();
 
-function buildCompanySearchBase() {
-  const disclosureCompaniesMap = new Map();
+  if (!token) {
+    throw new Error("로그인이 필요합니다");
+  }
 
-  mockDisclosureListResponse.disclosures.forEach((item) => {
-    const { corpCode, corpName, stockCode, corpCls } = item.company;
+  return token;
+};
 
-    if (!disclosureCompaniesMap.has(corpCode)) {
-      disclosureCompaniesMap.set(corpCode, {
-        corpCode,
-        corpName,
-        stockCode,
-        corpCls,
-        disclosureCount: 0,
-        latestDisclosureDate: item.receptionDate,
-        tags: new Set(item.tags || []),
-      });
+const parseErrorResponse = async (res, defaultMessage) => {
+  try {
+    const data = await res.json();
+    const message =
+      data?.message || data?.errorMessage || data?.error || defaultMessage;
+    const error = new Error(message);
+    error.status = res.status;
+    error.code = data?.code || data?.errorCode || null;
+    throw error;
+  } catch (err) {
+    if (err instanceof SyntaxError) {
+      const error = new Error(defaultMessage);
+      error.status = res.status;
+      throw error;
     }
+    throw err;
+  }
+};
 
-    const target = disclosureCompaniesMap.get(corpCode);
-    target.disclosureCount += 1;
+const request = async (path, options = {}) => {
+  const token = requireAuth();
 
-    if (
-      new Date(item.receptionDate).getTime() >
-      new Date(target.latestDisclosureDate).getTime()
-    ) {
-      target.latestDisclosureDate = item.receptionDate;
-    }
-
-    (item.tags || []).forEach((tag) => target.tags.add(tag));
+  const res = await fetch(`${SEARCH_HISTORY_BASE}${path}`, {
+    credentials: "include",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      ...(options.headers || {}),
+    },
   });
 
-  const disclosureCompanies = Array.from(disclosureCompaniesMap.values()).map(
-    (item) => ({
-      ...item,
-      tags: Array.from(item.tags),
-    }),
-  );
+  return res;
+};
 
-  const mergedMap = new Map();
-
-  [...disclosureCompanies, ...extraCompanies].forEach((company) => {
-    if (!mergedMap.has(company.corpCode)) {
-      mergedMap.set(company.corpCode, company);
-      return;
-    }
-
-    const prev = mergedMap.get(company.corpCode);
-
-    mergedMap.set(company.corpCode, {
-      ...prev,
-      ...company,
-      tags: Array.from(
-        new Set([...(prev.tags || []), ...(company.tags || [])]),
-      ),
-      disclosureCount: Math.max(
-        prev.disclosureCount || 0,
-        company.disclosureCount || 0,
-      ),
-      latestDisclosureDate:
-        new Date(prev.latestDisclosureDate).getTime() >
-        new Date(company.latestDisclosureDate).getTime()
-          ? prev.latestDisclosureDate
-          : company.latestDisclosureDate,
-    });
-  });
-
-  return Array.from(mergedMap.values());
-}
-
-function getMatchType(company, term) {
-  if (company.corpName.toLowerCase().includes(term)) return "corpName";
-  if (company.stockCode?.toLowerCase().includes(term)) return "stockCode";
-  if (company.tags?.some((tag) => tag.toLowerCase().includes(term)))
-    return "tag";
-  return "corpName";
-}
-
-function getRelevanceScore(company, term) {
-  const name = company.corpName.toLowerCase();
-  const stockCode = (company.stockCode || "").toLowerCase();
-
-  if (name === term) return 1.0;
-  if (name.startsWith(term)) return 0.98;
-  if (name.includes(term)) return 0.9;
-  if (stockCode.includes(term)) return 0.82;
-  return 0.75;
-}
-
-function pruneHistories(list) {
-  const now = Date.now();
-  const expireMs = HISTORY_EXPIRE_DAYS * 24 * 60 * 60 * 1000;
-
-  return list
-    .filter((item) => now - new Date(item.searchedAt).getTime() <= expireMs)
-    .sort((a, b) => new Date(b.searchedAt) - new Date(a.searchedAt))
-    .slice(0, MAX_HISTORY);
-}
+const normalizeSearchHistoryItem = (item = {}) => ({
+  historyId: item.historyId ?? null,
+  query: item.query ?? "",
+  searchedAt: item.searchedAt ?? null,
+});
 
 export const searchApi = {
-  async getSearchHistories() {
+  async getSearchHistories(limit = 30) {
     if (USE_MOCK) {
       await wait();
-
-      mockSearchHistoryList = pruneHistories(mockSearchHistoryList);
-
-      return {
-        historyList: mockSearchHistoryList,
-      };
+      return { historyList: mockSearchHistoryList };
     }
 
-    // TODO 실제 API
-    /*
-    const res = await fetch(`/api/users/search-histories?limit=${MAX_HISTORY}`, {
+    const res = await request(`?limit=${limit}`, {
       method: "GET",
-      credentials: "include",
     });
 
-    if (!res.ok) throw new Error("검색 기록 조회 실패");
-    return res.json();
-    */
+    if (!res.ok) {
+      await parseErrorResponse(res, "검색 기록 조회에 실패했습니다.");
+    }
+
+    const data = await res.json();
+    const historyList = Array.isArray(data?.historyList)
+      ? data.historyList.map(normalizeSearchHistoryItem)
+      : [];
+
+    return { historyList };
   },
 
   async addSearchHistory(query) {
     if (USE_MOCK) {
       await wait();
-
       const trimmed = query.trim();
-      if (!trimmed) {
-        throw new Error("검색어가 비어 있습니다.");
-      }
+      if (!trimmed) throw new Error("검색어가 비어 있습니다.");
 
       mockSearchHistoryList = mockSearchHistoryList.filter(
         (item) => item.query !== trimmed,
@@ -228,115 +123,50 @@ export const searchApi = {
         query: trimmed,
         searchedAt: new Date().toISOString(),
       };
-
-      mockSearchHistoryList = pruneHistories([
-        newItem,
-        ...mockSearchHistoryList,
-      ]);
-
+      mockSearchHistoryList.unshift(newItem);
       return newItem;
     }
 
-    // TODO 실제 API
-    /*
-    const res = await fetch("/api/users/search-histories", {
+    const res = await request("", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
       body: JSON.stringify({ query }),
     });
 
-    if (!res.ok) throw new Error("검색 기록 추가 실패");
-    return res.json();
-    */
+    if (!res.ok) {
+      await parseErrorResponse(res, "검색 기록 추가에 실패했습니다.");
+    }
+
+    const data = await res.json();
+    return normalizeSearchHistoryItem(data);
   },
 
   async removeSearchHistory(historyId) {
     if (USE_MOCK) {
       await wait();
-
       mockSearchHistoryList = mockSearchHistoryList.filter(
         (item) => item.historyId !== historyId,
       );
-
-      return true;
+      return;
     }
 
-    // TODO 실제 API
-    /*
-    const res = await fetch(`/api/users/search-histories/${historyId}`, {
+    const res = await request(`/${historyId}`, {
       method: "DELETE",
-      credentials: "include",
     });
 
-    if (!res.ok) throw new Error("검색 기록 삭제 실패");
-    return true;
-    */
+    if (!res.ok) {
+      await parseErrorResponse(res, "검색 기록 삭제에 실패했습니다.");
+    }
   },
 
-  async searchCompanies(word = "") {
-    if (USE_MOCK) {
-      await wait();
+  async searchCompanies(query) {
+    const trimmed = query.trim();
 
-      const term = word.trim().toLowerCase();
-
-      if (!term) {
-        return {
-          query: word,
-          totalCount: 0,
-          results: [],
-        };
-      }
-
-      const companies = buildCompanySearchBase();
-
-      const filtered = companies
-        .filter((company) => {
-          const corpName = company.corpName.toLowerCase();
-          const stockCode = (company.stockCode || "").toLowerCase();
-          const tags = company.tags || [];
-
-          return (
-            corpName.includes(term) ||
-            stockCode.includes(term) ||
-            tags.some((tag) => tag.toLowerCase().includes(term))
-          );
-        })
-        .map((company) => ({
-          ...company,
-          matchType: getMatchType(company, term),
-          relevanceScore: getRelevanceScore(company, term),
-        }))
-        .sort((a, b) => {
-          if (b.relevanceScore !== a.relevanceScore) {
-            return b.relevanceScore - a.relevanceScore;
-          }
-
-          return (
-            new Date(b.latestDisclosureDate).getTime() -
-            new Date(a.latestDisclosureDate).getTime()
-          );
-        });
-
-      return {
-        query: word,
-        totalCount: filtered.length,
-        results: filtered,
-      };
+    if (!trimmed) {
+      return { results: [] };
     }
 
-    // TODO 실제 API
-    /*
-    const query = new URLSearchParams({ word }).toString();
-    const res = await fetch(`/api/disclosures/company/search?${query}`, {
-      method: "GET",
-      credentials: "include",
-    });
-
-    if (!res.ok) throw new Error("기업 검색 실패");
-    return res.json();
-    */
+    // 회사 검색은 disclosureApi에 위임 (mock/real 토글은 disclosureApi가 처리)
+    const response = await disclosureApi.searchCompanies(trimmed);
+    return { results: response.results || [] };
   },
 };

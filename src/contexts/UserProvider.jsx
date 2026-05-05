@@ -7,7 +7,7 @@ import { createAuthRetryRunner } from "../shared/auth/withAuthRetry";
 
 export const UserProvider = ({ children }) => {
   const navigate = useNavigate();
-  const { isAuthenticated, authUser, logout, refresh } = useAuth();
+  const { isAuthenticated, authUser, initializing, logout, refresh } = useAuth();
 
   const [profile, setProfile] = useState(null);
   const [preference, setPreference] = useState(null);
@@ -256,12 +256,16 @@ export const UserProvider = ({ children }) => {
   }, [runWithRefreshRetry]);
 
   useEffect(() => {
+    if (initializing) {
+      return;
+    }
+
     if (isAuthenticated) {
       fetchUserData();
     } else {
       clearUserData();
     }
-  }, [isAuthenticated, fetchUserData, clearUserData]);
+  }, [initializing, isAuthenticated, fetchUserData, clearUserData]);
 
   const value = useMemo(
     () => ({

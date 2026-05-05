@@ -4,7 +4,7 @@ import { notificationApi } from "../shared/api/notificationApi";
 import { useAuth } from "./useAuth";
 
 export const NotificationProvider = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, initializing } = useAuth();
 
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -139,12 +139,14 @@ export const NotificationProvider = ({ children }) => {
   }, [notifications]);
 
   useEffect(() => {
+    if (initializing) return;
+
     if (isAuthenticated) {
       fetchNotifications();
     } else {
       clearNotifications();
     }
-  }, [isAuthenticated, fetchNotifications, clearNotifications]);
+  }, [initializing, isAuthenticated, fetchNotifications, clearNotifications]);
 
   const value = useMemo(
     () => ({

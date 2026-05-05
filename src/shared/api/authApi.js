@@ -1,9 +1,13 @@
+import { getServiceBaseUrl } from "./serviceConfig";
+
 const ACCESS_TOKEN_KEY = "accessToken";
 const DEVICE_ID_KEY = "deviceId";
 
 const USE_MOCK = import.meta.env.VITE_USE_REAL_AUTH !== "true";
-const USER_SERVICE_BASE =
-  import.meta.env.VITE_USER_SERVICE_BASE_URL || "http://localhost:9804";
+const USER_SERVICE_BASE = getServiceBaseUrl(
+  "VITE_USER_SERVICE_BASE_URL",
+  "http://localhost:9804",
+);
 const AUTH_BASE = `${USER_SERVICE_BASE}/api/auth`;
 
 let mockUsers = [
@@ -107,6 +111,22 @@ const normalizeSignupArgs = (userEmailOrPayload, password, nickname) => {
   };
 };
 
+const normalizeTokenResponse = (data = {}) => ({
+  accessToken: data.accessToken ?? null,
+  accessTokenTtl: data.accessTokenTtl ?? null,
+  refreshTokenTtl: data.refreshTokenTtl ?? null,
+  isPasswordSet: data.isPasswordSet ?? true,
+  isNewUser: data.isNewUser ?? false,
+});
+
+const persistAccessToken = (data) => {
+  if (data?.accessToken) {
+    setAccessToken(data.accessToken);
+  }
+
+  return normalizeTokenResponse(data);
+};
+
 export const authApi = {
   async login(email, password) {
     if (USE_MOCK) {
@@ -134,14 +154,14 @@ export const authApi = {
           mockHasRefreshSession = true;
           setAccessToken(token);
 
-          resolve({
-            email: foundUser.email,
-            nickname: foundUser.nickname,
-            accessToken: token,
-            accessTokenTtl: 3600,
-            isPasswordSet: foundUser.isPasswordSet,
-            isNewUser: foundUser.isNewUser,
-          });
+          resolve(
+            normalizeTokenResponse({
+              accessToken: token,
+              accessTokenTtl: 3600,
+              isPasswordSet: foundUser.isPasswordSet,
+              isNewUser: foundUser.isNewUser,
+            }),
+          );
         }, 300);
       });
     }
@@ -163,18 +183,7 @@ export const authApi = {
     }
 
     const data = await res.json();
-    if (data.accessToken) {
-      setAccessToken(data.accessToken);
-    }
-
-    return {
-      email: data.email ?? "",
-      nickname: data.nickname ?? "",
-      accessToken: data.accessToken,
-      accessTokenTtl: data.accessTokenTtl,
-      isPasswordSet: data.isPasswordSet ?? true,
-      isNewUser: data.isNewUser ?? false,
-    };
+    return persistAccessToken(data);
   },
 
   async signup(userEmailOrPayload, password, nickname) {
@@ -244,14 +253,14 @@ export const authApi = {
           mockAccessToken = newToken;
           setAccessToken(newToken);
 
-          resolve({
-            email: mockCurrentUser.email,
-            nickname: mockCurrentUser.nickname,
-            accessToken: newToken,
-            accessTokenTtl: 3600,
-            isPasswordSet: mockCurrentUser.isPasswordSet,
-            isNewUser: mockCurrentUser.isNewUser,
-          });
+          resolve(
+            normalizeTokenResponse({
+              accessToken: newToken,
+              accessTokenTtl: 3600,
+              isPasswordSet: mockCurrentUser.isPasswordSet,
+              isNewUser: mockCurrentUser.isNewUser,
+            }),
+          );
         }, 200);
       });
     }
@@ -265,18 +274,7 @@ export const authApi = {
     }
 
     const data = await res.json();
-    if (data.accessToken) {
-      setAccessToken(data.accessToken);
-    }
-
-    return {
-      email: data.email ?? "",
-      nickname: data.nickname ?? "",
-      accessToken: data.accessToken,
-      accessTokenTtl: data.accessTokenTtl,
-      isPasswordSet: data.isPasswordSet ?? true,
-      isNewUser: data.isNewUser ?? false,
-    };
+    return persistAccessToken(data);
   },
 
   async refreshRestart() {
@@ -293,18 +291,7 @@ export const authApi = {
     }
 
     const data = await res.json();
-    if (data.accessToken) {
-      setAccessToken(data.accessToken);
-    }
-
-    return {
-      email: data.email ?? "",
-      nickname: data.nickname ?? "",
-      accessToken: data.accessToken,
-      accessTokenTtl: data.accessTokenTtl,
-      isPasswordSet: data.isPasswordSet ?? true,
-      isNewUser: data.isNewUser ?? false,
-    };
+    return persistAccessToken(data);
   },
 
   async logout() {

@@ -4,7 +4,7 @@ import { bookmarkApi } from "../shared/api/bookmarkApi";
 import { useAuth } from "./useAuth";
 
 export const BookmarkProvider = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, initializing } = useAuth();
 
   const [bookmarks, setBookmarks] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -92,6 +92,28 @@ export const BookmarkProvider = ({ children }) => {
       } catch (err) {
         setError(err.message || "북마크 삭제 실패");
         console.error("북마크 삭제 실패:", err);
+        throw err;
+      }
+    },
+    [isAuthenticated, fetchBookmarks],
+  );
+
+  // 북마크 순서 변경
+  const reorderBookmarks = useCallback(
+    async (corpCodes) => {
+      if (!isAuthenticated) {
+        setError("로그인이 필요합니다");
+        return;
+      }
+
+      try {
+        setError(null);
+        await bookmarkApi.reorderBookmarks(corpCodes);
+        await fetchBookmarks();
+      } catch (err) {
+        setError(err.message || "북마크 순서 변경 실패");
+        console.error("북마크 순서 변경 실패:", err);
+        throw err;
       }
     },
     [isAuthenticated, fetchBookmarks],
@@ -115,12 +137,14 @@ export const BookmarkProvider = ({ children }) => {
   );
 
   useEffect(() => {
+    if (initializing) return;
+
     if (isAuthenticated) {
       fetchBookmarks();
     } else {
       clearBookmarks();
     }
-  }, [isAuthenticated, fetchBookmarks, clearBookmarks]);
+  }, [initializing, isAuthenticated, fetchBookmarks, clearBookmarks]);
 
   const value = useMemo(
     () => ({
@@ -131,6 +155,7 @@ export const BookmarkProvider = ({ children }) => {
       fetchBookmarks,
       addBookmark,
       removeBookmark,
+      reorderBookmarks,
       toggleBookmark,
       isBookmarked,
       clearBookmarks,
@@ -143,6 +168,7 @@ export const BookmarkProvider = ({ children }) => {
       fetchBookmarks,
       addBookmark,
       removeBookmark,
+      reorderBookmarks,
       toggleBookmark,
       isBookmarked,
       clearBookmarks,

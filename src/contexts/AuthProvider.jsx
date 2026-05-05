@@ -1,37 +1,25 @@
-// src/context/AuthProvider.jsx
-
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AuthContext } from "./AuthContext";
 import { authApi } from "../shared/api/authApi";
+import { userApi } from "../shared/api/userApi";
+
+const mapProfileToAuthUser = (profile, authData = {}) => ({
+  email: profile?.userEmail ?? profile?.email ?? null,
+  nickname: profile?.nickname ?? null,
+  isPasswordSet: authData?.isPasswordSet ?? true,
+  isNewUser: authData?.isNewUser ?? false,
+  accessTokenTtl: authData?.accessTokenTtl ?? null,
+  refreshTokenTtl: authData?.refreshTokenTtl ?? null,
+});
 
 export const AuthProvider = ({ children }) => {
   const refreshPromiseRef = useRef(null);
   const [authUser, setAuthUser] = useState(null);
-  const [accessToken, setAccessTokenState] = useState(
-    authApi.getStoredAccessToken() || null,
-  );
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    !!authApi.getStoredAccessToken(),
-  );
+  const [accessToken, setAccessTokenState] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState(null);
-
-  const applyAuthData = useCallback((data) => {
-    setAccessTokenState(data?.accessToken || null);
-    setIsAuthenticated(!!data?.accessToken);
-
-    // 일반 로그인 응답에는 userEmail/nickname/isNewUser가 없음
-    // OAuth 응답에는 올 수 있어서 optional 처리
-    setAuthUser({
-      email: data?.userEmail ?? data?.email ?? null,
-      nickname: data?.nickname ?? null,
-      isPasswordSet: data?.isPasswordSet ?? true,
-      isNewUser: data?.isNewUser ?? false,
-      accessTokenTtl: data?.accessTokenTtl ?? null,
-      refreshTokenTtl: data?.refreshTokenTtl ?? null,
-    });
-  }, []);
 
   const clearAuthState = useCallback(() => {
     authApi.clearAccessToken();
@@ -39,6 +27,27 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
     setAuthUser(null);
   }, []);
+
+  const hydrateAuthState = useCallback(
+    async (authData) => {
+      const nextAccessToken = authData?.accessToken || null;
+
+      if (!nextAccessToken) {
+        clearAuthState();
+        return null;
+      }
+
+      setAccessTokenState(nextAccessToken);
+      setIsAuthenticated(true);
+
+      const profile = await userApi.getUserProfile();
+      const nextAuthUser = mapProfileToAuthUser(profile, authData);
+
+      setAuthUser(nextAuthUser);
+      return nextAuthUser;
+    },
+    [clearAuthState],
+  );
 
   // 로그인
   const login = useCallback(
@@ -48,9 +57,12 @@ export const AuthProvider = ({ children }) => {
         setError(null);
 
         const data = await authApi.login(email, password);
-        applyAuthData(data);
+        const nextAuthUser = await hydrateAuthState(data);
 
-        return data;
+        return {
+          ...data,
+          authUser: nextAuthUser,
+        };
       } catch (err) {
         clearAuthState();
         setError(err.message || "로그인에 실패했습니다.");
@@ -59,7 +71,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
       }
     },
-    [applyAuthData, clearAuthState],
+    [clearAuthState, hydrateAuthState],
   );
 
   // 회원가입
@@ -78,7 +90,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // 회원 존재 여부 확인
+    // 회원 존재 여부 확인
   const checkExist = useCallback(async (userEmail) => {
     try {
       setError(null);
@@ -101,9 +113,12 @@ export const AuthProvider = ({ children }) => {
         setError(null);
 
         const data = await authApi.refresh();
-        applyAuthData(data);
+        const nextAuthUser = await hydrateAuthState(data);
 
-        return data;
+        return {
+          ...data,
+          authUser: nextAuthUser,
+        };
       } catch (err) {
         clearAuthState();
         setError(err.message || "토큰 재발급에 실패했습니다.");
@@ -115,28 +130,25 @@ export const AuthProvider = ({ children }) => {
 
     refreshPromiseRef.current = pending;
 
-    try {
-      return await pending;
-    } catch (err) {
-      throw err;
-    }
-  }, [applyAuthData, clearAuthState]);
+    return pending;
+  }, [clearAuthState, hydrateAuthState]);
 
-  // 앱 시작 시 자동 로그인 복구
   const restoreAuth = useCallback(async () => {
     try {
       setError(null);
 
       const data = await authApi.refreshRestart();
-      applyAuthData(data);
+      const nextAuthUser = await hydrateAuthState(data);
 
-      return data;
-    } catch (err) {
-      // 로그인 안 된 상태에서 실패하는 건 자연스러움
+      return {
+        ...data,
+        authUser: nextAuthUser,
+      };
+    } catch {
       clearAuthState();
       return null;
     }
-  }, [applyAuthData, clearAuthState]);
+  }, [clearAuthState, hydrateAuthState]);
 
   // 로그아웃
   const logout = useCallback(async () => {
@@ -158,17 +170,17 @@ export const AuthProvider = ({ children }) => {
     authApi.startOAuthLogin(provider);
   }, []);
 
-  // useEffect(() => {
-  //   const init = async () => {
-  //     try {
-  //       await restoreAuth();
-  //     } finally {
-  //       setInitializing(false);
-  //     }
-  //   };
+  useEffect(() => {
+    const init = async () => {
+      try {
+        await restoreAuth();
+      } finally {
+        setInitializing(false);
+      }
+    };
 
-  //   init();
-  // }, [restoreAuth]);
+    init();
+  }, [restoreAuth]);
 
   const value = useMemo(
     () => ({
@@ -205,193 +217,3 @@ export const AuthProvider = ({ children }) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-
-// import React, { useCallback, useEffect, useMemo, useState } from "react";
-// import { AuthContext } from "./AuthContext";
-// import { authApi } from "../shared/api/authApi";
-
-// export const AuthProvider = ({ children }) => {
-//   const [authUser, setAuthUser] = useState(null);
-//   const [accessToken, setAccessTokenState] = useState(
-//     authApi.getStoredAccessToken() || null,
-//   );
-//   const [isAuthenticated, setIsAuthenticated] = useState(
-//     !!authApi.getStoredAccessToken(),
-//   );
-//   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState(null);
-
-//   // 로그인
-//   const login = useCallback(async (email, password) => {
-//     try {
-//       setLoading(true);
-//       setError(null);
-
-//       const data = await authApi.login(email, password);
-
-//       setAccessTokenState(data.accessToken || null);
-//       setIsAuthenticated(!!data.accessToken);
-//       setAuthUser({
-//         email: data.email ?? "",
-//         nickname: data.nickname ?? "",
-//         isPasswordSet: data.isPasswordSet ?? true,
-//         isNewUser: data.isNewUser ?? false,
-//         accessTokenTtl: data.accessTokenTtl ?? null,
-//       });
-
-//       return data;
-//     } catch (err) {
-//       setError(err.message || "로그인 실패");
-//       throw err;
-//     } finally {
-//       setLoading(false);
-//     }
-//   }, []);
-
-//   // 회원가입
-//   const signup = useCallback(async (userEmail, password, nickname) => {
-//     try {
-//       setLoading(true);
-//       setError(null);
-
-//       const data = await authApi.signup(userEmail, password, nickname);
-//       return data;
-//     } catch (err) {
-//       setError(err.message || "회원가입 실패");
-//       throw err;
-//     } finally {
-//       setLoading(false);
-//     }
-//   }, []);
-
-//   // 회원 존재 여부 확인
-//   const checkExist = useCallback(async (email) => {
-//     try {
-//       setError(null);
-//       const exists = await authApi.checkExist(email);
-//       return exists;
-//     } catch (err) {
-//       setError(err.message || "회원 조회 실패");
-//       throw err;
-//     }
-//   }, []);
-
-//   // 토큰 재발급
-//   const refresh = useCallback(async () => {
-//     try {
-//       setError(null);
-
-//       const data = await authApi.refresh();
-
-//       setAccessTokenState(data.accessToken || null);
-//       setIsAuthenticated(!!data.accessToken);
-
-//       setAuthUser({
-//         email: data.email ?? "",
-//         nickname: data.nickname ?? "",
-//         isPasswordSet: data.isPasswordSet ?? true,
-//         isNewUser: data.isNewUser ?? false,
-//         accessTokenTtl: data.accessTokenTtl ?? null,
-//       });
-
-//       return data;
-//     } catch (err) {
-//       authApi.clearAccessToken();
-//       setAccessTokenState(null);
-//       setIsAuthenticated(false);
-//       setAuthUser(null);
-//       setError(err.message || "토큰 재발급 실패");
-//       throw err;
-//     }
-//   }, []);
-
-//   // 앱 시작 시 자동 로그인 복구
-//   const restoreAuth = useCallback(async () => {
-//     try {
-//       setLoading(true);
-//       setError(null);
-
-//       const data = await authApi.refreshRestart();
-
-//       setAccessTokenState(data.accessToken || null);
-//       setIsAuthenticated(!!data.accessToken);
-//       setAuthUser({
-//         email: data.email ?? "",
-//         nickname: data.nickname ?? "",
-//         isPasswordSet: data.isPasswordSet ?? true,
-//         isNewUser: data.isNewUser ?? false,
-//         accessTokenTtl: data.accessTokenTtl ?? null,
-//       });
-
-//       return data;
-//     } catch (err) {
-//       authApi.clearAccessToken();
-//       setAccessTokenState(null);
-//       setIsAuthenticated(false);
-//       setAuthUser(null);
-//       return null;
-//     } finally {
-//       setLoading(false);
-//     }
-//   }, []);
-
-//   // 로그아웃
-//   const logout = useCallback(async () => {
-//     try {
-//       setLoading(true);
-//       setError(null);
-//       await authApi.logout();
-//     } catch (err) {
-//       setError(err.message || "로그아웃 실패");
-//       throw err;
-//     } finally {
-//       authApi.clearAccessToken();
-//       setAccessTokenState(null);
-//       setIsAuthenticated(false);
-//       setAuthUser(null);
-//       setLoading(false);
-//     }
-//   }, []);
-
-//   // OAuth 로그인 시작
-//   const startOAuthLogin = useCallback((provider) => {
-//     authApi.startOAuthLogin(provider);
-//   }, []);
-
-//   useEffect(() => {
-//     restoreAuth();
-//   }, [restoreAuth]);
-
-//   const value = useMemo(
-//     () => ({
-//       authUser,
-//       accessToken,
-//       isAuthenticated,
-//       loading,
-//       error,
-//       login,
-//       signup,
-//       checkExist,
-//       refresh,
-//       restoreAuth,
-//       logout,
-//       startOAuthLogin,
-//     }),
-//     [
-//       authUser,
-//       accessToken,
-//       isAuthenticated,
-//       loading,
-//       error,
-//       login,
-//       signup,
-//       checkExist,
-//       refresh,
-//       restoreAuth,
-//       logout,
-//       startOAuthLogin,
-//     ],
-//   );
-
-//   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-// };
