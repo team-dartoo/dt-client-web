@@ -12,9 +12,9 @@ const BOOKMARK_BASE = `${USER_SERVICE_BASE}/api/users/bookmarks`;
 
 let mockBookmarks = [
   { corpCode: "00126380", corpName: "삼성전자" },
-  { corpCode: "00253801", corpName: "SK하이닉스" },
-  { corpCode: "00102486", corpName: "LG에너지솔루션" },
-  { corpCode: "00164742", corpName: "삼성바이오로직스" },
+  { corpCode: "00164779", corpName: "SK하이닉스" },
+  { corpCode: "01515323", corpName: "LG에너지솔루션" },
+  { corpCode: "00877059", corpName: "삼성바이오로직스" },
 ];
 
 const requireAuth = () => {

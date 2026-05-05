@@ -500,7 +500,7 @@ function buildCompanyDetailList() {
 // 검색용 추가 기업
 const extraSearchCompanies = [
   {
-    corpCode: "00164742",
+    corpCode: "00126362",
     corpName: "삼성SDI",
     stockCode: "006400",
     corpCls: "Y",
@@ -509,7 +509,7 @@ const extraSearchCompanies = [
     tags: ["분기보고서", "주주총회"],
   },
   {
-    corpCode: "00164800",
+    corpCode: "00149655",
     corpName: "삼성물산",
     stockCode: "028260",
     corpCls: "Y",
@@ -518,7 +518,7 @@ const extraSearchCompanies = [
     tags: ["IR", "건설"],
   },
   {
-    corpCode: "00356361",
+    corpCode: "00258801",
     corpName: "카카오",
     stockCode: "035720",
     corpCls: "Y",
@@ -527,7 +527,7 @@ const extraSearchCompanies = [
     tags: ["플랫폼", "사업보고서"],
   },
   {
-    corpCode: "01013517",
+    corpCode: "01137383",
     corpName: "카카오게임즈",
     stockCode: "293490",
     corpCls: "Y",
@@ -536,7 +536,7 @@ const extraSearchCompanies = [
     tags: ["게임", "분기보고서"],
   },
   {
-    corpCode: "01660985",
+    corpCode: "01133217",
     corpName: "카카오뱅크",
     stockCode: "323410",
     corpCls: "Y",
@@ -545,7 +545,7 @@ const extraSearchCompanies = [
     tags: ["금융", "실적"],
   },
   {
-    corpCode: "00164781",
+    corpCode: "00401731",
     corpName: "LG전자",
     stockCode: "066570",
     corpCls: "Y",
