@@ -73,8 +73,8 @@ function SortableBookmarkItem({ company, index, onDelete, onClickCompany }) {
 const Bookmark = () => {
   const navigate = useNavigate();
 
-  // context에서 북마크 목록/삭제 가져오기
-  const { bookmarks, removeBookmark, loading } = useBookmark();
+  // context에서 북마크 목록/삭제/순서변경 가져오기
+  const { bookmarks, removeBookmark, reorderBookmarks, loading, error: bookmarkError } = useBookmark();
 
   // 드래그 순서는 로컬 state로 관리
   const [companies, setCompanies] = useState([]);
@@ -87,17 +87,25 @@ const Bookmark = () => {
     setCompanies(bookmarks);
   }, [bookmarks]);
 
-  // 드래그 종료 시 순서 업데이트
-  const handleDragEnd = (event) => {
+  // 드래그 종료 시 순서 업데이트 (서버에 persist)
+  const handleDragEnd = async (event) => {
     const { active, over } = event;
     if (!over) return;
     if (active.id === over.id) return;
 
-    setCompanies((prev) => {
-      const oldIndex = prev.findIndex((c) => c.corpCode === active.id);
-      const newIndex = prev.findIndex((c) => c.corpCode === over.id);
-      return arrayMove(prev, oldIndex, newIndex);
-    });
+    const oldIndex = companies.findIndex((c) => c.corpCode === active.id);
+    const newIndex = companies.findIndex((c) => c.corpCode === over.id);
+    const reordered = arrayMove(companies, oldIndex, newIndex);
+
+    // 로컬 상태를 먼저 업데이트 (optimistic)
+    setCompanies(reordered);
+
+    try {
+      await reorderBookmarks(reordered.map((c) => c.corpCode));
+    } catch {
+      // 순서 변경 실패 시 이전 순서로 복원
+      setCompanies(companies);
+    }
   };
 
   const handleClickDelete = (index) => {
@@ -108,7 +116,11 @@ const Bookmark = () => {
   const handleConfirmDelete = async () => {
     if (targetIndex === null || !companies[targetIndex]) return;
     const targetcorpCode = companies[targetIndex].corpCode;
-    await removeBookmark(targetcorpCode);
+    try {
+      await removeBookmark(targetcorpCode);
+    } catch {
+      // 삭제 실패 시 로컬 리스트 유지 (context가 복원함)
+    }
 
     setShowAlert(false);
     setTargetIndex(null);
@@ -132,6 +144,10 @@ const Bookmark = () => {
       {loading ? (
         <section className="bookmark-list">
           <div className="bookmark-item">불러오는 중...</div>
+        </section>
+      ) : bookmarkError ? (
+        <section className="bookmark-list">
+          <div className="bookmark-item">관심 기업을 불러오지 못했습니다.</div>
         </section>
       ) : companies.length === 0 ? (
         <section className="bookmark-list">

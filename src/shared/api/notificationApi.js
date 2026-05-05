@@ -1,34 +1,43 @@
-// 알림 관련 API
-// 현재는 MOCK 데이터 사용
-// 실제 API 연동 시 TODO 부분 사용
-
 import { authApi } from "./authApi";
+import { getServiceBaseUrl } from "./serviceConfig";
 
-const USE_MOCK = true;
+const USE_MOCK = import.meta.env.VITE_USE_REAL_USER !== "true";
+const wait = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// 가상 알림 데이터
+const USER_SERVICE_BASE = getServiceBaseUrl(
+  "VITE_USER_SERVICE_BASE_URL",
+  "http://localhost:9804",
+);
+const NOTIFICATIONS_BASE = `${USER_SERVICE_BASE}/api/users/notifications`;
+
 let mockNotificationList = [
   {
-    id: "20",
-    title: "한온시스템 공시 업데이트",
-    content: "기업설명회(IR)개최(안내공시)",
+    id: 20,
+    _id: "20250925800487",
+    type: "DISCLOSURE_UPDATE",
+    corpName: "한온시스템",
+    corpCode: "00161125",
+    title: "기업설명회(IR)개최(안내공시)",
     status: "READ",
     createdAt: "2026-02-09T12:30:00Z",
     readAt: "2026-02-10T12:30:00Z",
-    //추가
-    type: "DISCLOSURE_UPDATE",
-    _id: "20250925800487",
+    summaryLines: null,
   },
   {
-    id: "21",
-    title: "한온시스템 공시 요약 알림",
-    content: "기업설명회(IR)개최(안내공시)",
+    id: 21,
+    _id: "20250925800488",
+    type: "AI_SUMMARY",
+    corpName: "한온시스템",
+    corpCode: "00161125",
+    title: "기업설명회(IR)개최(안내공시)",
     status: "UNREAD",
     createdAt: "2026-02-09T12:30:00Z",
     readAt: null,
-    //추가
-    type: "AI_SUMMARY",
-    _id: "20250925800487",
+    summaryLines: [
+      "실적은 시장 기대치에 부합하는 수준임",
+      "매출은 전년 대비 증가세를 기록함",
+      "향후 실적 가이던스 제공 예정",
+    ],
   },
 ];
 
@@ -42,232 +51,172 @@ const requireAuth = () => {
   return token;
 };
 
+const parseErrorResponse = async (res, defaultMessage) => {
+  try {
+    const data = await res.json();
+    const message =
+      data?.message || data?.errorMessage || data?.error || defaultMessage;
+    const error = new Error(message);
+    error.status = res.status;
+    error.code = data?.code || data?.errorCode || null;
+    throw error;
+  } catch (err) {
+    if (err instanceof SyntaxError) {
+      const error = new Error(defaultMessage);
+      error.status = res.status;
+      throw error;
+    }
+    throw err;
+  }
+};
+
+const request = async (path, options = {}) => {
+  const token = requireAuth();
+
+  const res = await fetch(`${NOTIFICATIONS_BASE}${path}`, {
+    credentials: "include",
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      ...(options.headers || {}),
+    },
+  });
+
+  return res;
+};
+
 const sortNotifications = (list) => {
   return [...list].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 };
 
+/**
+ * Normalize backend NotificationResponse → UI shape.
+ * Backend sends:
+ *   { id (Long), _id/receptNo (String), type, corpName, corpCode,
+ *     title, status, createdAt, readAt, summaryLines? }
+ */
+const normalizeNotification = (item = {}) => ({
+  id: item.id ?? null,
+  _id: item._id ?? item.receptNo ?? null,
+  type: item.type ?? null,
+  corpName: item.corpName ?? "",
+  corpCode: item.corpCode ?? "",
+  title: item.title ?? "",
+  status: item.status ?? "UNREAD",
+  createdAt: item.createdAt ?? null,
+  readAt: item.readAt ?? null,
+  summaryLines: Array.isArray(item.summaryLines) ? item.summaryLines : null,
+});
+
 export const notificationApi = {
-  // 알림 목록 조회
   async getNotifications() {
     if (USE_MOCK) {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          try {
-            requireAuth();
-
-            resolve({
-              notificationList: sortNotifications(mockNotificationList),
-            });
-          } catch (err) {
-            reject(err);
-          }
-        }, 300);
-      });
+      await wait();
+      requireAuth();
+      return {
+        notificationList: sortNotifications(mockNotificationList),
+      };
     }
 
-    // TODO 실제 API
-    /*
-    const token = authApi.getStoredAccessToken();
+    const res = await request("", { method: "GET" });
 
-    const res = await fetch("/api/users/notifications", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
-    });
-
-    if (!res.ok) throw new Error("알림 목록 조회 실패");
-
-    return res.json();
-    */
-  },
-
-  // 사용자 알림 추가
-  async addNotification(notificationData) {
-    if (USE_MOCK) {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          try {
-            requireAuth();
-
-            const newItem = {
-              id: String(Date.now()),
-              title: notificationData.title ?? "알림제목",
-              content: notificationData.content ?? "알림내용",
-              status: "UNREAD",
-              createdAt: new Date().toISOString(),
-              readAt: null,
-            };
-
-            mockNotificationList = [newItem, ...mockNotificationList];
-
-            resolve(newItem);
-          } catch (err) {
-            reject(err);
-          }
-        }, 300);
-      });
+    if (!res.ok) {
+      await parseErrorResponse(res, "알림 목록 조회에 실패했습니다.");
     }
 
-    // TODO 실제 API
-    /*
-    const token = authApi.getStoredAccessToken();
+    const data = await res.json();
+    const notificationList = Array.isArray(data?.notificationList)
+      ? data.notificationList.map(normalizeNotification)
+      : [];
 
-    const res = await fetch("/api/users/notifications", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
-      body: JSON.stringify(notificationData),
-    });
-
-    if (!res.ok) throw new Error("알림 추가 실패");
-
-    return res.json();
-    */
+    return { notificationList: sortNotifications(notificationList) };
   },
 
-  // 알림 읽음 처리
   async markAsRead(notificationId) {
     if (USE_MOCK) {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          try {
-            requireAuth();
+      await wait();
+      requireAuth();
 
-            const target = mockNotificationList.find(
-              (item) => item.id === notificationId,
-            );
+      const target = mockNotificationList.find(
+        (item) => item.id === notificationId,
+      );
 
-            if (!target) {
-              reject(new Error("해당 알림을 찾을 수 없습니다"));
-              return;
-            }
+      if (!target) {
+        throw new Error("해당 알림을 찾을 수 없습니다");
+      }
 
-            target.status = "READ";
-            target.readAt = new Date().toISOString();
+      target.status = "READ";
+      target.readAt = new Date().toISOString();
 
-            resolve({ ...target });
-          } catch (err) {
-            reject(err);
-          }
-        }, 300);
-      });
+      return normalizeNotification(target);
     }
 
-    // TODO 실제 API
-    /*
-    const token = authApi.getStoredAccessToken();
+    const res = await request(`/${notificationId}`, { method: "PATCH" });
 
-    const res = await fetch(`/api/users/notifications/${notificationId}`, {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
-    });
+    if (!res.ok) {
+      await parseErrorResponse(res, "알림 읽음 처리에 실패했습니다.");
+    }
 
-    if (!res.ok) throw new Error("알림 읽음 처리 실패");
-
-    return res.json();
-    */
+    const data = await res.json();
+    return normalizeNotification(data);
   },
 
-  // 알림 한 건 삭제
   async removeNotification(notificationId) {
     if (USE_MOCK) {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          try {
-            requireAuth();
+      await wait();
+      requireAuth();
 
-            if (!notificationId) {
-              const sorted = sortNotifications(mockNotificationList);
-              const latest = sorted[0];
+      if (!notificationId) {
+        const sorted = sortNotifications(mockNotificationList);
+        const latest = sorted[0];
 
-              if (!latest) {
-                resolve(true);
-                return;
-              }
+        if (!latest) return true;
 
-              mockNotificationList = mockNotificationList.filter(
-                (item) => item.id !== latest.id,
-              );
-              resolve(true);
-              return;
-            }
+        mockNotificationList = mockNotificationList.filter(
+          (item) => item.id !== latest.id,
+        );
+        return true;
+      }
 
-            mockNotificationList = mockNotificationList.filter(
-              (item) => item.id !== notificationId,
-            );
+      mockNotificationList = mockNotificationList.filter(
+        (item) => item.id !== notificationId,
+      );
 
-            resolve(true);
-          } catch (err) {
-            reject(err);
-          }
-        }, 300);
-      });
+      return true;
     }
 
-    // TODO 실제 API
-    /*
-    const token = authApi.getStoredAccessToken();
-
-    // id를 안 넘기면 가장 최신 알림 삭제
-    const url = notificationId
-      ? `/api/users/notifications/${notificationId}`
-      : "/api/users/notifications";
-
-    const res = await fetch(url, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
+    const res = await request(
+      notificationId ? `/${notificationId}` : "",
+      {
+        method: "DELETE",
+        headers: notificationId ? {} : { "Content-Type": undefined },
       },
-      credentials: "include",
-    });
+    );
 
-    if (!res.ok) throw new Error("알림 삭제 실패");
+    if (!res.ok) {
+      await parseErrorResponse(res, "알림 삭제에 실패했습니다.");
+    }
 
     return true;
-    */
   },
 
-  // 알림 전체 삭제
   async clearNotifications() {
     if (USE_MOCK) {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          try {
-            requireAuth();
-            mockNotificationList = [];
-            resolve(true);
-          } catch (err) {
-            reject(err);
-          }
-        }, 300);
-      });
+      await wait();
+      requireAuth();
+      mockNotificationList = [];
+      return true;
     }
 
-    // TODO 실제 API
-    /*
-    const token = authApi.getStoredAccessToken();
+    const res = await request("", { method: "DELETE" });
 
-    const res = await fetch("/api/users/notifications", {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: "include",
-    });
-
-    if (!res.ok) throw new Error("알림 전체 삭제 실패");
+    if (!res.ok) {
+      await parseErrorResponse(res, "알림 전체 삭제에 실패했습니다.");
+    }
 
     return true;
-    */
   },
 };
