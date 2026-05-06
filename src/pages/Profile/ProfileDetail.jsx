@@ -13,11 +13,13 @@ import editIcon from "@/images/edit_icon.svg";
 import { useUser } from "../../contexts/useUser";
 import { useAuth } from "../../contexts/useAuth";
 import Loading from "../../shared/components/Loading";
+import Alert from "../../shared/components/Alert";
 
 import "./profileDetail.css";
 
 const ProfileDetail = () => {
   const navigate = useNavigate();
+  const [showAlert, setShowAlert] = useState(false);
   const { logout } = useAuth();
 
   const { profile, planInfo, loading, updateProfile } = useUser();
@@ -48,6 +50,24 @@ const ProfileDetail = () => {
 
     await updateProfile(trimmed);
     setIsEditing(false);
+  };
+  const handleOpenLogoutAlert = () => {
+    setShowAlert(true);
+  };
+
+  const handleCloseAlert = () => {
+    setShowAlert(false);
+  };
+
+  const handleConfirmLogout = async () => {
+    try {
+      await logout();
+      setShowAlert(false);
+      navigate("/login");
+    } catch (err) {
+      console.error("로그아웃 실패:", err);
+      setShowAlert(false);
+    }
   };
 
   return (
@@ -102,11 +122,20 @@ const ProfileDetail = () => {
         </div>
 
         <div>
-          <p className="logout" onClick={logout}>
+          <p className="logout" onClick={handleOpenLogoutAlert}>
             로그아웃
           </p>
         </div>
       </section>
+
+      {showAlert && (
+        <Alert
+          message="정말 로그아웃 할까요?"
+          acceptBtn="예"
+          onChange={handleConfirmLogout}
+          onClose={handleCloseAlert}
+        />
+      )}
     </div>
   );
 };
