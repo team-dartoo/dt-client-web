@@ -51,6 +51,10 @@ const Begin = () => {
         >
           회원가입
         </Link>
+
+        <div className="begin-policy text-xs">
+          <Link to="/terms/privacy-policy">개인정보처리방침</Link>
+        </div>
       </div>
     </div>
   );

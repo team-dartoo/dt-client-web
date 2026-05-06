@@ -2,6 +2,7 @@ import React from "react";
 import { useIsMobile } from "../shared/hooks/useIsMobile";
 import MobileApp from "./MobileApp";
 import PcApp from "./PcApp";
+import PcPrivacyPolicy from "./PcPrivacyPolicy";
 import "./../shared/styles/common.css";
 
 import { ToastProvider } from "../contexts/ToastContext";
@@ -14,6 +15,8 @@ import { UserProvider } from "../contexts/UserProvider";
 
 export default function App() {
   const isMobile = useIsMobile();
+  const isPcPrivacyPolicyPage =
+    window.location.pathname === "/pc/privacy-policy";
 
   return (
     <ToastProvider>
@@ -23,7 +26,13 @@ export default function App() {
             <SearchProvider>
               <DisclosureProvider>
                 <BookmarkProvider>
-                  {isMobile ? <MobileApp /> : <PcApp />}
+                  {isMobile ? (
+                    <MobileApp />
+                  ) : isPcPrivacyPolicyPage ? (
+                    <PcPrivacyPolicy />
+                  ) : (
+                    <PcApp />
+                  )}
                 </BookmarkProvider>
               </DisclosureProvider>
             </SearchProvider>

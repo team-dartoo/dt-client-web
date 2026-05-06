@@ -1,0 +1,98 @@
+.pcPrivacyPolicy {
+  width: 100%;
+  min-height: 100vh;
+  padding: 80px 24px;
+  box-sizing: border-box;
+
+  background:
+    radial-gradient(
+      50% 50% at 50% 50%,
+      rgba(82, 146, 231, 0.2) 0%,
+      rgba(242, 248, 255, 0.2) 100%
+    ),
+    #fff;
+}
+
+.pc-policy-card {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 52px 56px;
+  box-sizing: border-box;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+
+.pc-policy-card h1 {
+  margin-bottom: 36px;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.pc-policy-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pc-policy-content p {
+  font-size: 15px;
+  line-height: 1.75;
+  word-break: keep-all;
+}
+
+.pc-policy-section {
+  margin-top: 24px;
+  padding-top: 28px;
+  border-top: 1px solid var(--gray2);
+}
+
+.pc-policy-section h2 {
+  margin-bottom: 18px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.pc-policy-section ul {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-left: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.pc-policy-section li {
+  font-size: 15px;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+.pc-policy-section strong {
+  font-weight: 700;
+}
+
+.pc-policy-home {
+  display: inline-block;
+  margin-top: 40px;
+  color: var(--gray5);
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 768px) {
+  .pcPrivacyPolicy {
+    padding: 40px 16px;
+  }
+
+  .pc-policy-card {
+    padding: 36px 24px;
+    border-radius: 18px;
+  }
+
+  .pc-policy-card h1 {
+    font-size: 24px;
+  }
+}

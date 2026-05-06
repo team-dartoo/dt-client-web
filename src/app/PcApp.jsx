@@ -10,6 +10,9 @@ const PcApp = () => {
         <img src={mockup} alt="pc_mockup" />
         모바일 전용 서비스입니다. 모바일로 접속해주세요.
         <img src={store} alt="pc_store" />
+        <a className="pc-policy-link" href="/pc/privacy-policy">
+          개인정보처리방침
+        </a>
       </div>
     </div>
   );

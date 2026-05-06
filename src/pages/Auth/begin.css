@@ -69,17 +69,22 @@
   width: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
+  padding: 10px 20px;
+  box-sizing: border-box;
 }
 
-.begin .title-wrapper img {
-  width: 87%;
+.title-wrapper img {
+  display: block;
+  width: min(80vw, 360px);
   height: auto;
-  object-fit: contain;
 }
 
-@media screen and (min-width: 768px) {
-  .begin .title-wrapper img {
-    width: 60%;
-  }
+.begin-policy {
+  display: flex;
+  justify-content: center;
+}
+
+.begin-policy a {
+  color: var(--gray5);
+  text-decoration: underline;
 }
