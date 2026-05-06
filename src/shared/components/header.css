@@ -32,7 +32,7 @@
 
 .header-left,
 .header-right {
-  width: 25px; /* 버튼 영역 크기 통일 */
+  width: 32px; /* 버튼 영역 크기 통일 */
   display: flex;
   justify-content: center;
   align-items: center;
