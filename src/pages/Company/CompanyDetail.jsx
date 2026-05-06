@@ -141,7 +141,7 @@ const CompanyDetail = () => {
             </button>
           }
         />
-        <div className="content-box">기업 정보를 불러오지 못했어요.</div>
+        <div className="empty-state">기업 정보를 불러오지 못했어요.</div>
       </div>
     );
   }

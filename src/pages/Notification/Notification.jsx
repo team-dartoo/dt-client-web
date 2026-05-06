@@ -14,13 +14,8 @@ import "./notification.css";
 const Notification = () => {
   const navigate = useNavigate();
 
-  const {
-    notifications,
-    loading,
-    error,
-    fetchNotifications,
-    markAllAsRead,
-  } = useNotification();
+  const { notifications, loading, error, fetchNotifications, markAllAsRead } =
+    useNotification();
 
   useEffect(() => {
     fetchNotifications();
@@ -51,9 +46,9 @@ const Notification = () => {
       {loading ? (
         <Loading />
       ) : error ? (
-        <div>알림을 불러오지 못했어요.</div>
+        <div className="empty-state">알림을 불러오지 못했어요.</div>
       ) : notifications.length === 0 ? (
-        <div>알림이 없어요.</div>
+        <div className="empty-state">알림이 없어요.</div>
       ) : (
         notifications.map((item) => (
           <NotificationItem

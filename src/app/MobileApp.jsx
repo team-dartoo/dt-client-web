@@ -14,6 +14,7 @@ import Main from "../pages/Main/Main";
 import Splash from "../pages/Splash/Splash";
 import Begin from "../pages/Auth/Begin";
 import Agree from "../pages/Auth/Agree";
+import TermsDetail from "../pages/Auth/TermsDetail";
 import SignUp from "../pages/Auth/SignUp";
 import Login from "../pages/Auth/Login";
 
@@ -92,6 +93,16 @@ const MobileApp = () => {
                 </MotionPage>
               }
             />
+
+            <Route
+              path="/terms/:type"
+              element={
+                <MotionPage isBack={isBack}>
+                  <TermsDetail />
+                </MotionPage>
+              }
+            />
+
             <Route
               path="/signup/form"
               element={

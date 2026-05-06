@@ -172,10 +172,10 @@ const MyCompanySection = ({ defaultExpanded = false }) => {
             <CardSkeleton />
           </>
         ) : bookmarks.length === 0 ? (
-          <div className="empty-state text-base">찜한 기업이 없습니다.</div>
+          <div className="empty-state text-base">찜한 기업이 없어요.</div>
         ) : disclosures.length === 0 ? (
           <div className="empty-state text-base">
-            선택한 기업의 공시가 없습니다.
+            선택한 기업의 공시가 없어요.
           </div>
         ) : (
           disclosures.map((item) => (

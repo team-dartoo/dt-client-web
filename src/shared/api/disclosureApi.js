@@ -1,7 +1,6 @@
 import { requireServiceBaseUrl } from "./serviceConfig";
 
-const USE_REAL_DISCLOSURE =
-  import.meta.env.VITE_USE_REAL_DISCLOSURE === "true";
+const USE_REAL_DISCLOSURE = import.meta.env.VITE_USE_REAL_DISCLOSURE === "true";
 const USE_MOCK = !USE_REAL_DISCLOSURE;
 let disclosureBase = null;
 let disclosureWorkerApiKey = null;
@@ -28,7 +27,8 @@ const getDisclosureWorkerApiKey = () => {
   }
 
   const configuredKey = import.meta.env.VITE_DISCLOSURE_WORKER_API_KEY;
-  disclosureWorkerApiKey = typeof configuredKey === "string" ? configuredKey.trim() : "";
+  disclosureWorkerApiKey =
+    typeof configuredKey === "string" ? configuredKey.trim() : "";
   return disclosureWorkerApiKey;
 };
 
@@ -44,7 +44,9 @@ const isLocalDisclosureService = () => {
 
 const buildUrl = (path = "", params = {}) => {
   const query = new URLSearchParams(
-    Object.entries(params).filter(([, value]) => value !== undefined && value !== null),
+    Object.entries(params).filter(
+      ([, value]) => value !== undefined && value !== null,
+    ),
   ).toString();
 
   return `${getDisclosureBase()}${path}${query ? `?${query}` : ""}`;
@@ -642,7 +644,7 @@ export const disclosureApi = {
       const found = disclosureMap.get(id);
 
       if (!found) {
-        throw new Error("공시를 찾을 수 없습니다.");
+        throw new Error("공시를 찾을 수 없어요.");
       }
 
       return found;
@@ -662,7 +664,7 @@ export const disclosureApi = {
       );
 
       if (!exists) {
-        throw new Error("원문 URL을 찾을 수 없습니다.");
+        throw new Error("원문 URL을 찾을 수 없어요.");
       }
 
       return {
@@ -789,7 +791,7 @@ export const disclosureApi = {
       const found = companyDetails.find((item) => item.corpCode === corpCode);
 
       if (!found) {
-        throw new Error("기업 정보를 찾을 수 없습니다.");
+        throw new Error("기업 정보를 찾을 수 없어요.");
       }
 
       return found;
@@ -842,13 +844,17 @@ export const disclosureApi = {
     const seeded = [];
 
     for (const fixture of FIXTURE_DISCLOSURES) {
-      const result = await request(`/${fixture.id}`, {}, {
-        method: "PUT",
-        body: fixture.payload,
-        headers: {
-          "X-Worker-API-Key": workerApiKey,
+      const result = await request(
+        `/${fixture.id}`,
+        {},
+        {
+          method: "PUT",
+          body: fixture.payload,
+          headers: {
+            "X-Worker-API-Key": workerApiKey,
+          },
         },
-      });
+      );
 
       seeded.push({
         id: result?._id ?? fixture.id,

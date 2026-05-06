@@ -30,9 +30,9 @@ const SearchHome = ({ onKeywordClick }) => {
         <div className="recentKW-title">최근 기록</div>
         <div className="recentKW-list">
           {historyLoading ? (
-            <div className="recentKW-empty text-base">불러오는 중...</div>
+            <div className="empty-state text-base">불러오는 중...</div>
           ) : histories.length === 0 ? (
-            <div className="recentKW-empty text-base">
+            <div className="empty-state text-base">
               최근 검색 기록이 없어요.
             </div>
           ) : (

@@ -127,7 +127,7 @@ const DisclosureDetail = () => {
     };
 
     if (!disclosureId) {
-      setError("공시 ID가 없습니다.");
+      setError("공시 ID가 없어요.");
       setLoading(false);
       return;
     }

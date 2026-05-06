@@ -56,14 +56,28 @@ const Profile = () => {
           <img src={chevronRight} alt="chevron-right" />
           공지사항
         </div>
-        <div className="menu-item">
+
+        <div className="menu-item" onClick={() => navigate("/terms/service")}>
           <img src={chevronRight} alt="chevron-right" />
-          이용 가이드
+          이용 약관
         </div>
-        <div className="menu-item">
+
+        <div
+          className="menu-item"
+          onClick={() => navigate("/terms/privacy-collection")}
+        >
           <img src={chevronRight} alt="chevron-right" />
-          투자 유의 안내
+          개인정보 수집 및 이용
         </div>
+
+        <div
+          className="menu-item"
+          onClick={() => navigate("/terms/privacy-policy")}
+        >
+          <img src={chevronRight} alt="chevron-right" />
+          개인정보처리방침
+        </div>
+
         <div className="menu-item">
           <img src={chevronRight} alt="chevron-right" />
           고객센터 문의

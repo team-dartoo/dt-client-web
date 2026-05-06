@@ -1,0 +1,29 @@
+.terms-detail {
+  min-height: 100dvh;
+  background-color: var(--gray1);
+}
+
+.terms-detail Header {
+  background-color: var(--gray1);
+}
+.terms-content {
+  padding: 24px 20px 120px;
+}
+
+.terms-title {
+  margin-bottom: 28px;
+  color: var(--subtext);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.terms-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.terms-body p {
+  color: var(--gray5);
+  line-height: 1.65;
+  word-break: keep-all;
+}

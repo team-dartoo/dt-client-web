@@ -96,6 +96,11 @@ const ProfileDetail = () => {
           </p>
         </div>
 
+        <div className="my-info-item">
+          <h6 className="my-info-name text-xl">계정 연동</h6>
+          <p className="my-info-sub">카카오</p>
+        </div>
+
         <div>
           <p className="logout" onClick={logout}>
             로그아웃

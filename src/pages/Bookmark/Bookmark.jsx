@@ -74,7 +74,13 @@ const Bookmark = () => {
   const navigate = useNavigate();
 
   // context에서 북마크 목록/삭제/순서변경 가져오기
-  const { bookmarks, removeBookmark, reorderBookmarks, loading, error: bookmarkError } = useBookmark();
+  const {
+    bookmarks,
+    removeBookmark,
+    reorderBookmarks,
+    loading,
+    error: bookmarkError,
+  } = useBookmark();
 
   // 드래그 순서는 로컬 state로 관리
   const [companies, setCompanies] = useState([]);
@@ -142,17 +148,11 @@ const Bookmark = () => {
       <Header title="관심 기업" />
 
       {loading ? (
-        <section className="bookmark-list">
-          <div className="bookmark-item">불러오는 중...</div>
-        </section>
+        <div className="empty-state">불러오는 중...</div>
       ) : bookmarkError ? (
-        <section className="bookmark-list">
-          <div className="bookmark-item">관심 기업을 불러오지 못했습니다.</div>
-        </section>
+        <div className="empty-state">관심 기업을 불러오지 못했습니다.</div>
       ) : companies.length === 0 ? (
-        <section className="bookmark-list">
-          <div className="bookmark-item">관심 기업이 없습니다.</div>
-        </section>
+        <div className="empty-state">관심 기업이 없어요.</div>
       ) : (
         <DndContext
           collisionDetection={closestCenter}

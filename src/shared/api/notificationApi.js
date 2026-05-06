@@ -145,7 +145,7 @@ export const notificationApi = {
       );
 
       if (!target) {
-        throw new Error("해당 알림을 찾을 수 없습니다");
+        throw new Error("해당 알림을 찾을 수 없어요");
       }
 
       target.status = "READ";
@@ -188,13 +188,10 @@ export const notificationApi = {
       return true;
     }
 
-    const res = await request(
-      notificationId ? `/${notificationId}` : "",
-      {
-        method: "DELETE",
-        headers: notificationId ? {} : { "Content-Type": undefined },
-      },
-    );
+    const res = await request(notificationId ? `/${notificationId}` : "", {
+      method: "DELETE",
+      headers: notificationId ? {} : { "Content-Type": undefined },
+    });
 
     if (!res.ok) {
       await parseErrorResponse(res, "알림 삭제에 실패했습니다.");
