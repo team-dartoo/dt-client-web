@@ -91,13 +91,6 @@ const DisclosureDetail = () => {
 
         const detailRes = await disclosureApi.getDisclosureById(disclosureId);
 
-        let urlRes = null;
-        try {
-          urlRes = await disclosureApi.getDisclosureDownloadUrl(disclosureId);
-        } catch (urlError) {
-          console.error("공시 원문 URL 조회 실패:", urlError);
-        }
-
         if (!alive) return;
 
         const sentiment = getSentimentInfo(detailRes.summary?.sentimentTag);
@@ -112,8 +105,7 @@ const DisclosureDetail = () => {
           sentiment,
           tags: detailRes.tags || [],
           summaryLines: toSummaryLines(detailRes.summary?.data),
-          originalUrl:
-            urlRes?.downloadUrl || detailRes.originalDocumentUrl || "",
+          originalUrl: `https://dart.fss.or.kr/dsaf001/main.do?rcpNo=${detailRes._id}`,
         };
 
         setDisclosure(mapped);
