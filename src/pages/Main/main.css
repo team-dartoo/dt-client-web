@@ -81,3 +81,25 @@
 .today-item:last-child {
   border-bottom: none;
 }
+
+.main-chat-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.main-chat-btn:hover,
+.main-chat-btn:active {
+  opacity: 1;
+}
+
+.main-chat-btn img {
+  width: 28px;
+  height: 28px;
+}
