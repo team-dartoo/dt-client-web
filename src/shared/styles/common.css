@@ -1,5 +1,6 @@
 @import "./normalize.css";
 @import "./reset.css";
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/pretendardvariable.css");
 
 /* common.css */
 
@@ -47,7 +48,13 @@
 
 body {
   height: 100%;
-  font-family: "Pretendard Variable";
+  font-family:
+    "Pretendard Variable",
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
   color: var(--mainText);
   font-size: var(--default-fz);
   letter-spacing: -0.28px;
