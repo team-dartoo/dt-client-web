@@ -47,7 +47,18 @@ const Main = () => {
   return (
     <div className="main page">
       <NavBar />
-      <Header title={<img src={dartooLogo} alt="dartoo" />} />
+      <Header
+        title={<img src={dartooLogo} alt="dartoo" />}
+        right={
+          <button
+            className="main-chat-btn"
+            onClick={() => navigate('/chatbot')}
+            aria-label="채팅"
+          >
+            <img src={chatIcon} alt="chat" />
+          </button>
+        }
+      />
       <SearchBar />
 
       {!userLoading && !isPremium && <PremiumAd />}
