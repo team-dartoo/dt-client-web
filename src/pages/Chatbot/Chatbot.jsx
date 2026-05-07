@@ -121,9 +121,9 @@ const Chatbot = () => {
 
           <section className="chatbot-list">
             {loading && conversations.length === 0 ? (
-              <div className="chatbot-empty">불러오는 중...</div>
+              <div className="empty-state">불러오는 중...</div>
             ) : conversations.length === 0 ? (
-              <div className="chatbot-empty">
+              <div className="empty-state">
                 대화가 없어요.
                 <br />새 대화를 시작해보세요.
               </div>

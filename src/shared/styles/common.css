@@ -315,8 +315,10 @@ h6 {
 
 .empty-state {
   text-align: center;
-  font-weight: 600;
-  padding: 10px;
+  padding: 60px 20px;
+  color: var(--subText);
+  line-height: 1.6;
+  white-space: pre-line;
 }
 
 /* 모바일 주소창 이슈/가로 오버슈트 보호 */

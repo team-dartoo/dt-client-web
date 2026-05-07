@@ -83,15 +83,17 @@
 }
 
 .main-chat-btn {
-  background: none;
+  background: var(--mainBlue);
   border: none;
   padding: 0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.7;
-  transition: opacity 0.2s ease;
+  position: fixed;
+  right: 20px;
+  bottom: 76px;
+  z-index: 1000;
 }
 
 .main-chat-btn:hover,

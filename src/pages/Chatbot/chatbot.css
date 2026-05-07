@@ -36,14 +36,6 @@
   -webkit-overflow-scrolling: touch;
 }
 
-.chatbot-empty {
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--subText);
-  line-height: 1.6;
-  white-space: pre-line;
-}
-
 .chatbot-list-item {
   display: flex;
   justify-content: space-between;
