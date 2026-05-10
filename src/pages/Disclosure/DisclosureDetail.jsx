@@ -11,10 +11,11 @@ import "./disclosureDetail.css";
 import { disclosureApi } from "../../shared/api/disclosureApi";
 import { useRelativeTime } from "../../shared/hooks/useRelativeTime";
 import { useAuth } from "../../contexts/useAuth";
+import { useUser } from "../../contexts/useUser";
 import AuthPromptSheet from "../../shared/components/AuthPromptSheet";
+import { shareDisclosure } from "../../shared/utils/shareDisclosure";
 
 const toSummaryLines = (summaryData) => {
-  // summary.data가 ["...", "...", "..."] 형태로 온다고 가정
   if (!Array.isArray(summaryData)) {
     return ["요약이 아직 없어요."];
   }
@@ -63,8 +64,11 @@ const DisclosureDetail = () => {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
 
-  const { isAuthenticated } = useAuth();
-  const [showSignupPrompt, setShowSignupPrompt] = useState(false);
+  const { isAuthenticated, loading: authLoading } = useAuth();
+
+  const { planInfo, fetchPlanInfo, loading: userLoading } = useUser();
+
+  const [promptType, setPromptType] = useState(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -80,6 +84,15 @@ const DisclosureDetail = () => {
       document.removeEventListener("touchstart", handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    if (!fetchPlanInfo) return;
+
+    fetchPlanInfo().catch((err) => {
+      console.error("플랜 정보 조회 실패:", err);
+    });
+  }, [isAuthenticated, fetchPlanInfo]);
 
   useEffect(() => {
     let alive = true;
@@ -165,8 +178,11 @@ const DisclosureDetail = () => {
       setOpen={setOpen}
       wrapRef={wrapRef}
       isAuthenticated={isAuthenticated}
-      showSignupPrompt={showSignupPrompt}
-      setShowSignupPrompt={setShowSignupPrompt}
+      authLoading={authLoading}
+      PlanInfo={planInfo}
+      userLoading={userLoading}
+      promptType={promptType}
+      setPromptType={setPromptType}
     />
   );
 };
@@ -178,13 +194,71 @@ function DisclosureDetailContent({
   setOpen,
   wrapRef,
   isAuthenticated,
-  showSignupPrompt,
-  setShowSignupPrompt,
+  authLoading,
+  PlanInfo,
+  userLoading,
+  promptType,
+  setPromptType,
 }) {
   const { text: relativeUpdatedAt } = useRelativeTime(disclosure.updatedAt);
 
   const { title, companyName, sentiment, tags, summaryLines, originalUrl } =
     disclosure;
+
+  const planStatus =
+    PlanInfo?.plan_status ?? PlanInfo?.Plan_status ?? PlanInfo?.planStatus;
+
+  const isPremiumActive =
+    PlanInfo?.plan === "PREMIUM" && planStatus === "ACTIVE";
+
+  // 확인용 로그
+  console.log("PlanInfo 확인:", PlanInfo);
+  console.log("planStatus 확인:", planStatus);
+  console.log("isPremiumActive:", isPremiumActive);
+
+  const handleShare = async () => {
+    if (!isAuthenticated) {
+      setPromptType("auth");
+      return;
+    }
+
+    await shareDisclosure({
+      disclosureId: disclosure.disclosureId,
+      title: disclosure.title,
+      companyName: disclosure.companyName,
+    });
+  };
+
+  const handleOpenOriginal = () => {
+    if (!isAuthenticated) {
+      setPromptType("auth");
+      return;
+    }
+
+    if (!originalUrl) return;
+
+    window.open(originalUrl, "_blank", "noopener,noreferrer");
+  };
+
+  const handleChatClick = () => {
+    if (!isAuthenticated) {
+      setPromptType("auth");
+      return;
+    }
+
+    if (authLoading || userLoading) {
+      return;
+    }
+
+    if (!isPremiumActive) {
+      setPromptType("premium");
+      return;
+    }
+
+    // TODO: 실제 챗봇 라우트에 맞춰 수정
+    navigate("/chatbot");
+    // 또는 navigate(`/chatbot?disclosureId=${disclosure.disclosureId}`);
+  };
 
   return (
     <div className="DisclosureDetail page">
@@ -199,13 +273,7 @@ function DisclosureDetailContent({
         }
         right={
           isAuthenticated ? (
-            <button
-              type="button"
-              onClick={() => {
-                // TODO: 공유 구현
-              }}
-              aria-label="share"
-            >
+            <button type="button" onClick={handleShare} aria-label="share">
               <img src={shareIcon} alt="shareIcon" />
             </button>
           ) : null
@@ -274,10 +342,7 @@ function DisclosureDetailContent({
             <button
               className="dis-btn btn primary-bg white"
               type="button"
-              onClick={() => {
-                if (!originalUrl) return;
-                window.open(originalUrl, "_blank", "noopener,noreferrer");
-              }}
+              onClick={handleOpenOriginal}
             >
               공시원문 바로가기 <img src={elinkIcon} alt="external_link" />
             </button>
@@ -329,31 +394,27 @@ function DisclosureDetailContent({
       </section>
 
       <div
-        className="dis-chatBar"
+        className={`dis-chatBar ${authLoading || userLoading ? "loading" : ""}`}
         role="button"
         tabIndex={0}
-        onClick={() => {
-          if (!isAuthenticated) {
-            setShowSignupPrompt(true);
-            return;
-          }
-
-          // TODO: 챗봇 페이지 이동
-          // navigate(`/chatbot?disclosureId=${disclosure.disclosureId}`);
-        }}
+        onClick={handleChatClick}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
+            handleChatClick();
           }
         }}
       >
-        공시에 대해 궁금한 점이 있다면 물어보세요.
+        {authLoading || userLoading
+          ? "플랜 정보를 확인하고 있어요."
+          : "공시에 대해 궁금한 점이 있다면 물어보세요."}
         <img src={sendIcon} alt="sendIcon" />
       </div>
 
       <AuthPromptSheet
-        open={showSignupPrompt}
-        onClose={() => setShowSignupPrompt(false)}
+        open={promptType !== null}
+        type={promptType}
+        onClose={() => setPromptType(null)}
       />
     </div>
   );

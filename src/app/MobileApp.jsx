@@ -11,7 +11,6 @@ import SafeAreaLayout from "../shared/layout/SafeAreaLayout";
 import PrivateRoute from "../routes/PrivateRoute";
 
 import Main from "../pages/Main/Main";
-import Splash from "../pages/Splash/Splash";
 import Begin from "../pages/Auth/Begin";
 import Agree from "../pages/Auth/Agree";
 import TermsDetail from "../pages/Auth/TermsDetail";
@@ -69,14 +68,7 @@ const MobileApp = () => {
         <AnimatePresence mode="wait">
           <Routes location={location} key={routeKey}>
             {/* 공개 페이지 */}
-            <Route
-              path="/splash"
-              element={
-                <MotionPage isBack={isBack}>
-                  <Splash />
-                </MotionPage>
-              }
-            />
+
             <Route
               path="/"
               element={

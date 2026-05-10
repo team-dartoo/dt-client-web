@@ -13,7 +13,7 @@ const USER_BASE = `${USER_SERVICE_BASE}/api/users`;
 let mockUserProfile = {
   userEmail: "example@gmail.com",
   nickname: "예시임시닉네임",
-  plan: "FREE",
+  plan: "PREMIUM",
 };
 
 // 가상 동의 정보
@@ -40,7 +40,7 @@ let mockLinkedOAuthProviders = [];
 
 // 가상 플랜 정보
 let mockPlanInfo = {
-  plan: "FREE",
+  plan: "PREMIUM",
   plan_expire_at: "2026-12-31",
   plan_status: "ACTIVE",
 };
@@ -95,7 +95,10 @@ const decodeJwtPayload = (token) => {
   try {
     const base64Payload = token.split(".")[1];
     const normalized = base64Payload.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), "=");
+    const padded = normalized.padEnd(
+      normalized.length + ((4 - (normalized.length % 4)) % 4),
+      "=",
+    );
     return JSON.parse(atob(padded));
   } catch {
     return null;
