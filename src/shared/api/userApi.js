@@ -13,7 +13,7 @@ const USER_BASE = `${USER_SERVICE_BASE}/api/users`;
 let mockUserProfile = {
   userEmail: "example@gmail.com",
   nickname: "예시임시닉네임",
-  plan: "PREMIUM",
+  plan: "FREE",
 };
 
 // 가상 동의 정보
@@ -40,7 +40,7 @@ let mockLinkedOAuthProviders = [];
 
 // 가상 플랜 정보
 let mockPlanInfo = {
-  plan: "PREMIUM",
+  plan: "FREE",
   plan_expire_at: "2026-12-31",
   plan_status: "ACTIVE",
 };

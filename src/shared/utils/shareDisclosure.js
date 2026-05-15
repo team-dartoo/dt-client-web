@@ -1,3 +1,6 @@
+import { Share } from "@capacitor/share";
+import { Capacitor } from "@capacitor/core";
+
 // http/IP 환경에서도 링크 복사를 시도하기 위한 fallback 함수
 const copyToClipboardFallback = (text) => {
   const textarea = document.createElement("textarea");
@@ -41,6 +44,14 @@ export const shareDisclosure = async ({ disclosureId, title, companyName }) => {
   };
 
   try {
+    // Capacitor 앱 환경이면 네이티브 공유창 사용
+    if (Capacitor.isNativePlatform()) {
+      await Share.share({
+        ...shareData,
+        dialogTitle: "공시 공유하기",
+      });
+      return;
+    }
     // 모바일/WebView 등에서 기본 공유창 지원 시
     if (navigator.share) {
       await navigator.share(shareData);
