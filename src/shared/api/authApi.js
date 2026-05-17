@@ -100,7 +100,9 @@ const normalizeSignupArgs = (userEmailOrPayload, password, nickname) => {
       ...(userEmailOrPayload.birthday
         ? { birthday: userEmailOrPayload.birthday }
         : {}),
-      ...(userEmailOrPayload.gender ? { gender: userEmailOrPayload.gender } : {}),
+      ...(userEmailOrPayload.gender
+        ? { gender: userEmailOrPayload.gender }
+        : {}),
     };
   }
 
@@ -187,7 +189,11 @@ export const authApi = {
   },
 
   async signup(userEmailOrPayload, password, nickname) {
-    const signupData = normalizeSignupArgs(userEmailOrPayload, password, nickname);
+    const signupData = normalizeSignupArgs(
+      userEmailOrPayload,
+      password,
+      nickname,
+    );
 
     if (USE_MOCK) {
       return new Promise((resolve) => {
@@ -322,10 +328,10 @@ export const authApi = {
   },
 
   startOAuthLogin(provider) {
-    if (USE_MOCK) {
-      console.log(`[MOCK] OAuth 로그인 시작: ${provider}`);
-      return;
-    }
+    // if (USE_MOCK) {
+    //   console.log(`[MOCK] OAuth 로그인 시작: ${provider}`);
+    //   return;
+    // }
 
     window.location.href = `${AUTH_BASE.replace(/\/api\/auth$/, "")}/oauth2/authorization/${provider}`;
   },

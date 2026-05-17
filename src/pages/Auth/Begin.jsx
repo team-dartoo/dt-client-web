@@ -11,7 +11,7 @@ import "./begin.css";
 const Begin = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, startOAuthLogin } = useAuth();
 
   if (isAuthenticated) {
     return <Navigate to="/main" replace />;
@@ -35,15 +35,25 @@ const Begin = () => {
           이메일 로그인
         </button>
         <div className="social-login-wrapper">
-          <Link className="loginBtnCircle kakao" to="*">
+          <button
+            className="loginBtnCircle kakao"
+            onClick={() => startOAuthLogin("kakao")}
+          >
             <img src={kakao} alt="kakao_icon" />
-          </Link>
-          <Link className="loginBtnCircle google" to="*">
+          </button>
+
+          <button
+            className="loginBtnCircle google"
+            onClick={() => startOAuthLogin("google")}
+          >
             <img src={google} alt="google_icon" />
-          </Link>
-          <Link className="loginBtnCircle naver" to="*">
+          </button>
+          <button
+            className="loginBtnCircle naver"
+            onClick={() => startOAuthLogin("naver")}
+          >
             <img src={naver} alt="naver_icon" />
-          </Link>
+          </button>
         </div>
         <Link
           className="btn loginBtn signupBtn primary-dark"

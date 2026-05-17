@@ -34,6 +34,8 @@ import Premium from "../pages/Profile/Premium";
 import CompanyDetail from "../pages/Company/CompanyDetail";
 import DisclosureDetail from "../pages/Disclosure/DisclosureDetail";
 
+import Callback from "../pages/Auth/Callback";
+
 const PAGE_TRANSITION = { duration: 0.1, ease: "easeInOut" };
 
 const PAGE_VARIANTS = {
@@ -111,6 +113,16 @@ const MobileApp = () => {
                 </MotionPage>
               }
             />
+
+            <Route
+              path="/oauth/callback"
+              element={
+                <MotionPage isBack={isBack}>
+                  <Callback />
+                </MotionPage>
+              }
+            />
+
             <Route
               path="/disclosure/:disclosureId"
               element={
