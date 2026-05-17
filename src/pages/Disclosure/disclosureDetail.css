@@ -86,6 +86,9 @@
 }
 
 .dis-ai-list {
+  display: flex;
+  gap: 5px;
+  flex-direction: column;
   margin: 8px;
 }
 
