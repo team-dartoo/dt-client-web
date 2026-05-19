@@ -1,3 +1,9 @@
+.begin {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .btn.loginBtn {
   min-width: 250px;
   width: 76vw;
@@ -70,11 +76,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
+
   box-sizing: border-box;
-  min-height: clamp(90px, 24vw, 130px);
+
+  /* 이미지 로딩 전에도 높이 확보 */
+  height: min(calc(80vw * 438 / 682), calc(360px * 438 / 682));
 }
 
-.title-wrapper img {
+.begin .title-wrapper img {
   display: block;
   width: min(80vw, 360px);
   height: auto;

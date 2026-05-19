@@ -24,7 +24,7 @@ const Begin = () => {
   return (
     <div className="begin page">
       <div className="title-wrapper">
-        <img src={beginTitle} alt="begin_title" />
+        <img src={beginTitle} alt="begin_title" width="682" height="438" />
       </div>
 
       <div className="btn-wrapper">
