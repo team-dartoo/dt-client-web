@@ -70,6 +70,18 @@ const ProfileDetail = () => {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+
+    const date = new Date(dateString);
+
+    return date.toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  };
+
   return (
     <div className="ProfileDetail page">
       <Header
@@ -112,7 +124,10 @@ const ProfileDetail = () => {
         <div className="my-info-item">
           <h6 className="my-info-name text-xl">구독 정보</h6>
           <p className="my-info-sub">
-            {planInfo?.plan} ({planInfo?.plan_expire_at})
+            {planInfo?.plan}
+            {planInfo?.plan !== "FREE" && planInfo?.plan_expire_at
+              ? ` (${formatDate(planInfo.plan_expire_at)})`
+              : ""}
           </p>
         </div>
 

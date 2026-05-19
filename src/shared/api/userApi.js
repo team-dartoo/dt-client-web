@@ -41,7 +41,7 @@ let mockLinkedOAuthProviders = [];
 // 가상 플랜 정보
 let mockPlanInfo = {
   plan: "FREE",
-  plan_expire_at: "2026-12-31",
+  plan_expire_at: "2026-06-17T10:19:04.256313Z",
   plan_status: "ACTIVE",
 };
 
