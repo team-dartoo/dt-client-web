@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { AuthContext } from "./AuthContext";
 import { authApi } from "../shared/api/authApi";
 import { userApi } from "../shared/api/userApi";
@@ -49,6 +55,34 @@ export const AuthProvider = ({ children }) => {
     [clearAuthState],
   );
 
+  // OAuth 로그인 완료 처리
+  const completeOAuthLogin = useCallback(
+    async (authData) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        authApi.saveAccessToken(authData.accessToken);
+
+        const nextAuthUser = await hydrateAuthState(authData);
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        return {
+          ...authData,
+          authUser: nextAuthUser,
+        };
+      } catch (err) {
+        clearAuthState();
+        setError(err.message || "소셜 로그인 처리에 실패했습니다.");
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [clearAuthState, hydrateAuthState],
+  );
+
   // 로그인
   const login = useCallback(
     async (email, password) => {
@@ -90,7 +124,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-    // 회원 존재 여부 확인
+  // 회원 존재 여부 확인
   const checkExist = useCallback(async (userEmail) => {
     try {
       setError(null);
@@ -197,6 +231,7 @@ export const AuthProvider = ({ children }) => {
       restoreAuth,
       logout,
       startOAuthLogin,
+      completeOAuthLogin,
     }),
     [
       authUser,
@@ -212,6 +247,7 @@ export const AuthProvider = ({ children }) => {
       restoreAuth,
       logout,
       startOAuthLogin,
+      completeOAuthLogin,
     ],
   );
 

@@ -27,6 +27,7 @@ let mockHasRefreshSession = false;
 const setAccessToken = (token) => {
   if (!token) return;
   localStorage.setItem(ACCESS_TOKEN_KEY, token);
+  console.log("저장 후 토큰:", localStorage.getItem("accessToken"));
 };
 
 const getAccessToken = () => {
@@ -334,6 +335,10 @@ export const authApi = {
     // }
 
     window.location.href = `${AUTH_BASE.replace(/\/api\/auth$/, "")}/oauth2/authorization/${provider}`;
+  },
+
+  saveAccessToken(token) {
+    setAccessToken(token);
   },
 
   getStoredAccessToken() {

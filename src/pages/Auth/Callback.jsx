@@ -1,16 +1,81 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Toast from "../../shared/components/Toast";
+import { useAuth } from "../../contexts/useAuth";
 
 const Callback = () => {
-  return <div>Callback</div>;
+  const navigate = useNavigate();
+  const { completeOAuthLogin } = useAuth();
+
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+
+  useEffect(() => {
+    const handleOAuthCallback = async () => {
+      const hash = window.location.hash.replace("#", "");
+      const params = new URLSearchParams(hash);
+
+      const accessToken = params.get("accessToken");
+      const isNewUser = params.get("isNewUser") === "true";
+      const isPasswordSet = params.get("isPasswordSet") === "true";
+
+      console.log("hash:", hash);
+      console.log("accessToken:", accessToken);
+      console.log("isNewUser:", isNewUser);
+      console.log("isPasswordSet:", isPasswordSet);
+
+      if (!accessToken) {
+        setToastMessage("소셜 로그인에 실패했습니다.");
+        setToastOpen(true);
+
+        setTimeout(() => {
+          navigate("/login?error=OAUTH_LOGIN_FAILED", { replace: true });
+        }, 1200);
+
+        return;
+      }
+
+      window.history.replaceState(null, "", "/oauth/callback");
+
+      try {
+        await completeOAuthLogin({
+          accessToken,
+          isNewUser,
+          isPasswordSet,
+        });
+
+        if (isNewUser || !isPasswordSet) {
+          navigate("/signup/profile", { replace: true });
+          return;
+        }
+
+        navigate("/main", { replace: true });
+      } catch (err) {
+        setToastMessage("소셜 로그인 처리에 실패했습니다.");
+        setToastOpen(true);
+
+        setTimeout(() => {
+          navigate("/login?error=OAUTH_LOGIN_FAILED", { replace: true });
+        }, 1200);
+      }
+    };
+
+    handleOAuthCallback();
+  }, [navigate, completeOAuthLogin]);
+
+  return (
+    <div className="callback page">
+      <p className="empty-state">로그인 처리 중...</p>
+
+      <Toast
+        message={toastMessage}
+        status="error"
+        open={toastOpen}
+        onClose={() => setToastOpen(false)}
+        autoHideMs={1200}
+      />
+    </div>
+  );
 };
 
 export default Callback;
-
-// Begin 화면
-// → 카카오 로그인 버튼 클릭
-// → 백엔드 /oauth2/authorization/kakao 이동
-// → 카카오 로그인
-// → 백엔드가 로그인 처리
-// → 프론트 /oauth/callback 으로 다시 이동
-// → 프론트가 토큰 저장
-// → /main 또는 온보딩 페이지로 이동
