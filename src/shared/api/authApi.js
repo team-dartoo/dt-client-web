@@ -76,7 +76,7 @@ const request = async (path, options = {}) => {
 
 const createMockToken = (email) => `mock-access-token-${email}-${Date.now()}`;
 
-const getOrCreateDeviceId = () => {
+export const getOrCreateDeviceId = () => {
   let id = localStorage.getItem(DEVICE_ID_KEY);
   if (!id) {
     id = crypto.randomUUID

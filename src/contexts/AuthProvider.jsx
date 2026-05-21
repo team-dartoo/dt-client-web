@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { AuthContext } from "./AuthContext";
 import { authApi } from "../shared/api/authApi";
 import { userApi } from "../shared/api/userApi";
+import { disableWebPush } from "../shared/api/webPushClient";
 
 const mapProfileToAuthUser = (profile, authData = {}) => ({
   email: profile?.userEmail ?? profile?.email ?? null,
@@ -155,6 +156,13 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
+
+      try {
+        await disableWebPush();
+      } catch {
+        // best-effort
+      }
+
       await authApi.logout();
     } catch (err) {
       setError(err.message || "로그아웃에 실패했습니다.");
