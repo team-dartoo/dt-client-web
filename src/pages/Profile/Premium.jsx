@@ -14,11 +14,6 @@ import Loading from "../../shared/components/Loading";
 import { useUser } from "../../contexts/useUser";
 import { useToast } from "../../contexts/ToastContext";
 
-const formatDate = (dateText) => {
-  if (!dateText) return "";
-  return dateText.replaceAll("-", ". ");
-};
-
 const Premium = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -28,6 +23,18 @@ const Premium = () => {
   const [openPurchase, setOpenPurchase] = useState(false);
   const [fadeIn, setFadeIn] = useState(false);
   const [purchaseLoading, setPurchaseLoading] = useState(false);
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+
+    const date = new Date(dateString);
+
+    return date.toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  };
 
   useEffect(() => {
     if (!openPurchase) {
@@ -53,7 +60,7 @@ const Premium = () => {
 
       await updatePlan({
         plan: "PREMIUM",
-        plan_expire_at: "2026-10-10",
+        plan_expire_at: "2026-06-17T10:19:04.256313Z",
         plan_status: "ACTIVE",
       });
 

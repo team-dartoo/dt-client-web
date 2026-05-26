@@ -21,6 +21,7 @@ import Search from "../pages/Main/Search";
 
 import Bookmark from "../pages/Bookmark/Bookmark";
 import Chatbot from "../pages/Chatbot/Chatbot";
+import ChatbotTest from "../pages/Chatbot/ChatbotTest";
 import { ChatProvider } from "../contexts/ChatProvider";
 
 import Notification from "../pages/Notification/Notification";
@@ -70,6 +71,8 @@ const MobileApp = () => {
         <AnimatePresence mode="wait">
           <Routes location={location} key={routeKey}>
             {/* 공개 페이지 */}
+
+            <Route path="/chatbot-test" element={<ChatbotTest />} />
 
             <Route
               path="/"
