@@ -35,7 +35,10 @@ const copyToClipboardFallback = (text) => {
 
 // 공시 공유 함수
 export const shareDisclosure = async ({ disclosureId, title, companyName }) => {
-  const shareUrl = `${window.location.origin}/disclosure/${disclosureId}`;
+  const SERVICE_BASE_URL =
+    import.meta.env.VITE_SERVICE_BASE_URL || window.location.origin;
+
+  const shareUrl = `${SERVICE_BASE_URL}/disclosure/${disclosureId}`;
 
   const shareData = {
     title,

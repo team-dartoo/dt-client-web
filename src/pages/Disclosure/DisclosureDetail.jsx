@@ -211,11 +211,6 @@ function DisclosureDetailContent({
   const isPremiumActive =
     PlanInfo?.plan === "PREMIUM" && planStatus === "ACTIVE";
 
-  // 확인용 로그
-  console.log("PlanInfo 확인:", PlanInfo);
-  console.log("planStatus 확인:", planStatus);
-  console.log("isPremiumActive:", isPremiumActive);
-
   const handleShare = async () => {
     if (!isAuthenticated) {
       setPromptType("auth");
