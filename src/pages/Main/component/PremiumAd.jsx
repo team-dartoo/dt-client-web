@@ -13,7 +13,7 @@ const PremiumAd = () => {
       onClick={() => navigate("/profile/premium")}
     >
       <img src={crownIcon} alt="crown" />
-      <p>프리미엄 버전 사용해보기</p>
+      <p className="white">프리미엄 버전 사용해보기</p>
     </div>
   );
 };
