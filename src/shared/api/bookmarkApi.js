@@ -15,6 +15,18 @@ let mockBookmarks = [
   { corpCode: "00164779", corpName: "SK하이닉스" },
   { corpCode: "01515323", corpName: "LG에너지솔루션" },
   { corpCode: "00877059", corpName: "삼성바이오로직스" },
+  { corpCode: "00388873", corpName: "현대자동차" },
+  { corpCode: "00141694", corpName: "기아" },
+  { corpCode: "00258840", corpName: "셀트리온" },
+  { corpCode: "00145104", corpName: "POSCO홀딩스" },
+  { corpCode: "00266964", corpName: "NAVER" },
+  { corpCode: "00952178", corpName: "카카오" },
+  { corpCode: "00155258", corpName: "삼성SDI" },
+  { corpCode: "00111740", corpName: "LG화학" },
+  { corpCode: "00105314", corpName: "KB금융" },
+  { corpCode: "00355147", corpName: "신한지주" },
+  { corpCode: "00120207", corpName: "삼성물산" },
+  { corpCode: "00413041", corpName: "현대모비스" },
 ];
 
 const requireAuth = () => {

@@ -186,6 +186,10 @@ h6 {
   background: linear-gradient(90deg, #00e3ff 0%, #4aa7ee 21.15%, #946bdc 100%);
 }
 
+.recent {
+  color: var(--mainBlue);
+}
+
 /* page */
 
 .page {

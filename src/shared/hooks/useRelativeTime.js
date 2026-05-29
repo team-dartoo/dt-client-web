@@ -1,55 +1,71 @@
 import { useEffect, useState } from "react";
 
-function formatRelativeTime(dateString) {
-  const now = new Date();
-  const past = new Date(dateString);
-  const diffMs = now - past;
+const formatDate = (date) => {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
 
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}년 ${month}월 ${day}일`;
+};
+
+function formatRelativeTime(dateString) {
+  if (!dateString) {
+    return { text: "", type: "invalid" };
+  }
+
+  const past = new Date(dateString);
+
+  if (Number.isNaN(past.getTime())) {
+    return { text: "", type: "invalid" };
+  }
+
+  const now = new Date();
+  const diffMs = now.getTime() - past.getTime();
+
+  if (diffMs < 0) {
+    return { text: formatDate(past), type: "date" };
+  }
+
+  const diffSeconds = Math.floor(diffMs / 1000);
   const diffMinutes = Math.floor(diffMs / (1000 * 60));
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  // 24시간 내 - 푸른 글씨로 n분 전, n시간 전, 방금 전(1분 이내)
-  // 7일 내 - 회색 글씨로 n일 전
-  // 7일 이후 - 회색 글씨로 전체 날짜 표시
+  if (diffSeconds < 60) {
+    return { text: "방금 전", type: "recent" };
+  }
 
-  // 24시간 이내 → recent
-  if (diffDays < 1) {
-    if (diffMinutes < 1) return { text: "방금 전", type: "recent" };
-    if (diffMinutes < 60)
-      return { text: `${diffMinutes}분 전`, type: "recent" };
+  if (diffMinutes < 60) {
+    return { text: `${diffMinutes}분 전`, type: "recent" };
+  }
+
+  if (diffHours < 24) {
     return { text: `${diffHours}시간 전`, type: "recent" };
   }
 
-  // 1~7일 → days
   if (diffDays <= 7) {
     return { text: `${diffDays}일 전`, type: "days" };
   }
 
-  // 7일 이상 → date
-  const year = past.getFullYear();
-  const month = String(past.getMonth() + 1).padStart(2, "0");
-  const day = String(past.getDate()).padStart(2, "0");
-
-  return { text: `${year}.${month}.${day}`, type: "date" };
+  return { text: formatDate(past), type: "date" };
 }
 
 export function useRelativeTime(dateString) {
-  const [state, setState] = useState(() => {
-    const { text, type } = formatRelativeTime(dateString);
-    return { text, type };
-  });
+  const [state, setState] = useState(() => formatRelativeTime(dateString));
 
   useEffect(() => {
     const update = () => {
-      const { text, type } = formatRelativeTime(dateString);
-      setState({ text, type });
+      setState(formatRelativeTime(dateString));
     };
 
     update();
-    const intervalId = setInterval(update, 60 * 1000); // 1분마다 갱신
+
+    const intervalId = setInterval(update, 60 * 1000);
+
     return () => clearInterval(intervalId);
   }, [dateString]);
 
-  return state; // { text, type }
+  return state;
 }

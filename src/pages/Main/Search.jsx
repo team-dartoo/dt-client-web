@@ -65,13 +65,15 @@ const Search = () => {
 
   return (
     <div className="Search page">
-      <SearchBar
-        value={keyword}
-        onChange={handleSearchChange}
-        onSubmit={handleSearchSubmit}
-        onFocusChange={setIsFocused}
-        onClear={handleClear} // X 버튼 전용 콜백
-      />
+      <div className="search-bar-sticky">
+        <SearchBar
+          value={keyword}
+          onChange={handleSearchChange}
+          onSubmit={handleSearchSubmit}
+          onFocusChange={setIsFocused}
+          onClear={handleClear} // X 버튼 전용 콜백
+        />
+      </div>
 
       {isHomeMode ? (
         <SearchHome onKeywordClick={handleKeywordClick} />

@@ -15,7 +15,7 @@ let mockSearchHistoryList = [
   {
     historyId: "234243",
     query: "삼성전자",
-    searchedAt: "2026-02-09T12:30:00Z",
+    searchedAt: "2026-05-29T12:30:00Z",
   },
   {
     historyId: "234244",
