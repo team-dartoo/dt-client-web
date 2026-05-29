@@ -9,6 +9,11 @@ import backIcon from "@/images/search_back_icon.svg";
 const SearchBar = ({ value, onChange, onSubmit, onClear }) => {
   const [keyword, setKeyword] = useState(value ?? "");
   const inputRef = useRef(null);
+
+  const lastSubmittedRef = useRef("");
+
+  const ignoreNextBlurRef = useRef(false);
+
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -18,34 +23,44 @@ const SearchBar = ({ value, onChange, onSubmit, onClear }) => {
   const isMainPage = pathname === "/main";
   const isSearchPage = pathname === "/main/search";
 
-  // 부모 value 변경 시 동기화
   useEffect(() => {
     setKeyword(value ?? "");
   }, [value]);
 
-  // 검색 페이지 진입 시 자동 포커스
   useEffect(() => {
     if (isSearchPage && inputRef.current) {
       inputRef.current.focus();
     }
   }, [isSearchPage]);
 
-  // main에서 클릭하면 search로 이동
   const handleWrapperClick = () => {
     if (isMainPage) {
       navigate("/main/search");
     }
   };
 
-  // 뒤로가기 버튼 로직 개선
+  const submitSearch = () => {
+    if (!isSearchPage) return;
+
+    const trimmed = keyword.trim();
+    if (!trimmed) return;
+
+    if (lastSubmittedRef.current === trimmed) return;
+
+    lastSubmittedRef.current = trimmed;
+    onSubmit?.(trimmed);
+  };
+
+  const preventBlurSubmitOnce = () => {
+    ignoreNextBlurRef.current = true;
+  };
+
   const handleBack = (e) => {
     e.stopPropagation();
 
     if (q) {
-      // 결과 화면이면 → 검색 홈
       navigate("/main/search", { replace: true });
     } else if (isSearchPage) {
-      // 검색 홈이면 → 메인
       navigate("/main");
     }
   };
@@ -58,6 +73,8 @@ const SearchBar = ({ value, onChange, onSubmit, onClear }) => {
 
   const handleClear = (e) => {
     e.stopPropagation();
+    lastSubmittedRef.current = "";
+
     onClear?.();
     inputRef.current?.focus();
   };
@@ -65,10 +82,17 @@ const SearchBar = ({ value, onChange, onSubmit, onClear }) => {
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      const trimmed = keyword.trim();
-      if (!trimmed) return;
-      onSubmit?.(trimmed);
+      submitSearch();
     }
+  };
+
+  const handleBlur = () => {
+    if (ignoreNextBlurRef.current) {
+      ignoreNextBlurRef.current = false;
+      return;
+    }
+
+    submitSearch();
   };
 
   return (
@@ -80,6 +104,7 @@ const SearchBar = ({ value, onChange, onSubmit, onClear }) => {
         className="left-icon"
         src={isMainPage ? searchIcon : backIcon}
         alt={isMainPage ? "search" : "back"}
+        onPointerDown={isMainPage ? undefined : preventBlurSubmitOnce}
         onClick={isMainPage ? undefined : handleBack}
       />
 
@@ -91,10 +116,16 @@ const SearchBar = ({ value, onChange, onSubmit, onClear }) => {
         value={keyword}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
       />
 
       {keyword && !isMainPage && (
-        <button className="clear-btn" onClick={handleClear} aria-label="clear">
+        <button
+          className="clear-btn"
+          onPointerDown={preventBlurSubmitOnce}
+          onClick={handleClear}
+          aria-label="clear"
+        >
           ✕
         </button>
       )}

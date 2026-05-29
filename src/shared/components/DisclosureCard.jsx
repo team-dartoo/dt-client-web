@@ -28,7 +28,13 @@ const DisclosureCard = ({
   const sentimentType = getSentimentType(sentimentTag);
 
   return (
-    <div className="disclosure-card">
+    <div
+      className="disclosure-card"
+      onClick={() => {
+        if (!disclosureId) return;
+        navigate(`/disclosure/${disclosureId}`);
+      }}
+    >
       <div className="card-header">
         <div className="card-header-left">
           <span

@@ -19,11 +19,6 @@ const Callback = () => {
       const isNewUser = params.get("isNewUser") === "true";
       const isPasswordSet = params.get("isPasswordSet") === "true";
 
-      console.log("hash:", hash);
-      console.log("accessToken:", accessToken);
-      console.log("isNewUser:", isNewUser);
-      console.log("isPasswordSet:", isPasswordSet);
-
       if (!accessToken) {
         setToastMessage("소셜 로그인에 실패했습니다.");
         setToastOpen(true);
