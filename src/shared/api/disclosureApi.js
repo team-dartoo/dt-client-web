@@ -304,7 +304,7 @@ export const mockDisclosureListResponse = {
       },
       schemaVersion: "1.0",
       createdAt: "2025-09-24T15:10:00Z",
-      updatedAt: "2025-09-24T16:20:00Z",
+      updatedAt: "2026-05-29T05:38:00Z",
     },
     {
       _id: "20250923000999",

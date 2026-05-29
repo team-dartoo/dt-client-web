@@ -23,9 +23,7 @@ const Callback = () => {
         setToastMessage("소셜 로그인에 실패했습니다.");
         setToastOpen(true);
 
-        setTimeout(() => {
-          navigate("/login?error=OAUTH_LOGIN_FAILED", { replace: true });
-        }, 1200);
+        navigate("/login?error=OAUTH_LOGIN_FAILED", { replace: true });
 
         return;
       }

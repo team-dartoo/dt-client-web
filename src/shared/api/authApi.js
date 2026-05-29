@@ -27,7 +27,6 @@ let mockHasRefreshSession = false;
 const setAccessToken = (token) => {
   if (!token) return;
   localStorage.setItem(ACCESS_TOKEN_KEY, token);
-  console.log("저장 후 토큰:", localStorage.getItem("accessToken"));
 };
 
 const getAccessToken = () => {
@@ -134,38 +133,36 @@ export const authApi = {
   async login(email, password) {
     if (USE_MOCK) {
       return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          const foundUser = mockUsers.find(
-            (user) => user.email === email && user.password === password,
-          );
+        const foundUser = mockUsers.find(
+          (user) => user.email === email && user.password === password,
+        );
 
-          if (!foundUser) {
-            const err = new Error("이메일 또는 비밀번호가 올바르지 않습니다.");
-            err.status = 401;
-            reject(err);
-            return;
-          }
+        if (!foundUser) {
+          const err = new Error("이메일 또는 비밀번호가 올바르지 않습니다.");
+          err.status = 401;
+          reject(err);
+          return;
+        }
 
-          const token = createMockToken(foundUser.email);
-          mockCurrentUser = {
-            email: foundUser.email,
-            nickname: foundUser.nickname,
+        const token = createMockToken(foundUser.email);
+        mockCurrentUser = {
+          email: foundUser.email,
+          nickname: foundUser.nickname,
+          isPasswordSet: foundUser.isPasswordSet,
+          isNewUser: foundUser.isNewUser,
+        };
+        mockAccessToken = token;
+        mockHasRefreshSession = true;
+        setAccessToken(token);
+
+        resolve(
+          normalizeTokenResponse({
+            accessToken: token,
+            accessTokenTtl: 3600,
             isPasswordSet: foundUser.isPasswordSet,
             isNewUser: foundUser.isNewUser,
-          };
-          mockAccessToken = token;
-          mockHasRefreshSession = true;
-          setAccessToken(token);
-
-          resolve(
-            normalizeTokenResponse({
-              accessToken: token,
-              accessTokenTtl: 3600,
-              isPasswordSet: foundUser.isPasswordSet,
-              isNewUser: foundUser.isNewUser,
-            }),
-          );
-        }, 300);
+          }),
+        );
       });
     }
 
@@ -198,11 +195,9 @@ export const authApi = {
 
     if (USE_MOCK) {
       return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({
-            email: signupData.userEmail,
-          });
-        }, 300);
+        resolve({
+          email: signupData.userEmail,
+        });
       });
     }
 
@@ -225,9 +220,7 @@ export const authApi = {
   async checkExist(userEmail) {
     if (USE_MOCK) {
       return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve(mockUsers.some((user) => user.email === userEmail));
-        }, 300);
+        resolve(mockUsers.some((user) => user.email === userEmail));
       });
     }
 
@@ -246,29 +239,27 @@ export const authApi = {
   async refresh() {
     if (USE_MOCK) {
       return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          if (!mockHasRefreshSession || !mockCurrentUser) {
-            removeAccessToken();
-            mockAccessToken = null;
-            const err = new Error("토큰 재발급에 실패했습니다.");
-            err.status = 401;
-            reject(err);
-            return;
-          }
+        if (!mockHasRefreshSession || !mockCurrentUser) {
+          removeAccessToken();
+          mockAccessToken = null;
+          const err = new Error("토큰 재발급에 실패했습니다.");
+          err.status = 401;
+          reject(err);
+          return;
+        }
 
-          const newToken = createMockToken(mockCurrentUser.email);
-          mockAccessToken = newToken;
-          setAccessToken(newToken);
+        const newToken = createMockToken(mockCurrentUser.email);
+        mockAccessToken = newToken;
+        setAccessToken(newToken);
 
-          resolve(
-            normalizeTokenResponse({
-              accessToken: newToken,
-              accessTokenTtl: 3600,
-              isPasswordSet: mockCurrentUser.isPasswordSet,
-              isNewUser: mockCurrentUser.isNewUser,
-            }),
-          );
-        }, 200);
+        resolve(
+          normalizeTokenResponse({
+            accessToken: newToken,
+            accessTokenTtl: 3600,
+            isPasswordSet: mockCurrentUser.isPasswordSet,
+            isNewUser: mockCurrentUser.isNewUser,
+          }),
+        );
       });
     }
 
@@ -304,13 +295,11 @@ export const authApi = {
   async logout() {
     if (USE_MOCK) {
       return new Promise((resolve) => {
-        setTimeout(() => {
-          mockCurrentUser = null;
-          mockAccessToken = null;
-          mockHasRefreshSession = false;
-          removeAccessToken();
-          resolve(true);
-        }, 300);
+        mockCurrentUser = null;
+        mockAccessToken = null;
+        mockHasRefreshSession = false;
+        removeAccessToken();
+        resolve(true);
       });
     }
 
