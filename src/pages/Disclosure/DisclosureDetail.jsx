@@ -8,8 +8,8 @@ import infoIcon from "@/images/info.svg";
 import elinkIcon from "@/images/external-link.svg";
 import sendIcon from "@/images/send_icon.svg";
 import "./disclosureDetail.css";
-import { disclosureApi } from "../../shared/api/disclosureApi";
-import { useRelativeTime } from "../../shared/hooks/useRelativeTime";
+import { useDisclosure } from "../../contexts/useDisclosure";
+import { formatDateTime } from "../../shared/hooks/useRelativeTime";
 import { useAuth } from "../../contexts/useAuth";
 import { useUser } from "../../contexts/useUser";
 import AuthPromptSheet from "../../shared/components/AuthPromptSheet";
@@ -57,16 +57,14 @@ const DisclosureDetail = () => {
   const navigate = useNavigate();
   const { disclosureId } = useParams();
 
-  const [disclosure, setDisclosure] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
   const [open, setOpen] = useState(false);
   const wrapRef = useRef(null);
 
   const { isAuthenticated, loading: authLoading } = useAuth();
-
   const { planInfo, fetchPlanInfo, loading: userLoading } = useUser();
+
+  const { selectedDisclosure, loading, error, fetchDisclosureById } =
+    useDisclosure();
 
   const [promptType, setPromptType] = useState(null);
 
@@ -95,54 +93,10 @@ const DisclosureDetail = () => {
   }, [isAuthenticated, fetchPlanInfo]);
 
   useEffect(() => {
-    let alive = true;
+    if (!disclosureId) return;
 
-    const fetchDisclosureDetail = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const detailRes = await disclosureApi.getDisclosureById(disclosureId);
-
-        if (!alive) return;
-
-        const sentiment = getSentimentInfo(detailRes.summary?.sentimentTag);
-
-        const mapped = {
-          disclosureId: detailRes._id,
-          title: detailRes.reportName,
-          companyName: detailRes.company?.corpName ?? "",
-          companyCode: detailRes.company?.stockCode ?? "",
-          corpCode: detailRes.company?.corpCode ?? "",
-          updatedAt: detailRes.updatedAt || detailRes.receptionDate,
-          sentiment,
-          tags: detailRes.tags || [],
-          summaryLines: toSummaryLines(detailRes.summary?.data),
-          originalUrl: `https://dart.fss.or.kr/dsaf001/main.do?rcpNo=${detailRes._id}`,
-        };
-
-        setDisclosure(mapped);
-      } catch (e) {
-        if (!alive) return;
-        console.error("공시 상세 조회 실패:", e);
-        setError("공시 정보를 불러오지 못했습니다.");
-      } finally {
-        if (alive) setLoading(false);
-      }
-    };
-
-    if (!disclosureId) {
-      setError("공시 ID가 없어요.");
-      setLoading(false);
-      return;
-    }
-
-    fetchDisclosureDetail();
-
-    return () => {
-      alive = false;
-    };
-  }, [disclosureId]);
+    fetchDisclosureById(disclosureId);
+  }, [disclosureId, fetchDisclosureById]);
 
   if (loading) {
     return (
@@ -152,7 +106,7 @@ const DisclosureDetail = () => {
     );
   }
 
-  if (error || !disclosure) {
+  if (error || !selectedDisclosure) {
     return (
       <div className="DisclosureDetail page">
         <Header
@@ -169,6 +123,21 @@ const DisclosureDetail = () => {
       </div>
     );
   }
+
+  const sentiment = getSentimentInfo(selectedDisclosure.summary?.sentimentTag);
+
+  const disclosure = {
+    disclosureId: selectedDisclosure._id,
+    title: selectedDisclosure.reportName,
+    companyName: selectedDisclosure.company?.corpName ?? "",
+    companyCode: selectedDisclosure.company?.stockCode ?? "",
+    corpCode: selectedDisclosure.company?.corpCode ?? "",
+    updatedAt: selectedDisclosure.updatedAt || selectedDisclosure.receptionDate,
+    sentiment,
+    tags: selectedDisclosure.tags || [],
+    summaryLines: toSummaryLines(selectedDisclosure.summary?.data),
+    originalUrl: `https://dart.fss.or.kr/dsaf001/main.do?rcpNo=${selectedDisclosure._id}`,
+  };
 
   return (
     <DisclosureDetailContent
@@ -200,10 +169,15 @@ function DisclosureDetailContent({
   promptType,
   setPromptType,
 }) {
-  const { text: relativeUpdatedAt } = useRelativeTime(disclosure.updatedAt);
-
-  const { title, companyName, sentiment, tags, summaryLines, originalUrl } =
-    disclosure;
+  const {
+    title,
+    companyName,
+    corpCode,
+    sentiment,
+    tags,
+    summaryLines,
+    originalUrl,
+  } = disclosure;
 
   const planStatus =
     PlanInfo?.plan_status ?? PlanInfo?.Plan_status ?? PlanInfo?.planStatus;
@@ -278,8 +252,19 @@ function DisclosureDetailContent({
       <section className="dis-header">
         <h1 className="dis-title text-3xl">{title}</h1>
         <div className="dis-sub">
-          <h2>{companyName}</h2>
-          <h3 className="text-xs">공시 업데이트 : {relativeUpdatedAt}</h3>
+          <button
+            type="button"
+            onClick={() => {
+              if (!corpCode) return;
+              navigate(`/company/${corpCode}`);
+            }}
+          >
+            <h2>{companyName}</h2>
+          </button>
+
+          <h3 className="text-xs">
+            공시 업데이트 : {formatDateTime(disclosure.updatedAt)}
+          </h3>
         </div>
       </section>
 

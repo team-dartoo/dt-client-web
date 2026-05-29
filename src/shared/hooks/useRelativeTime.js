@@ -1,7 +1,16 @@
 import { useEffect, useState } from "react";
 
-const formatDate = (date) => {
-  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+// Date 객체가 정상인지 검사
+const isValidDate = (date) => {
+  return date instanceof Date && !Number.isNaN(date.getTime());
+};
+
+// yyyy년 mm월 dd일
+export const formatDate = (dateString) => {
+  if (!dateString) return "";
+
+  const date = new Date(dateString);
+  if (!isValidDate(date)) return "";
 
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -10,6 +19,25 @@ const formatDate = (date) => {
   return `${year}년 ${month}월 ${day}일`;
 };
 
+// yyyy년 mm월 dd일 hh시 mm분 ss초
+export const formatDateTime = (dateString) => {
+  if (!dateString) return "";
+
+  const date = new Date(dateString);
+  if (!isValidDate(date)) return "";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+
+  return `${year}년 ${month}월 ${day}일 ${hours}:${minutes}:${seconds}`;
+};
+
+// 상대 시간
 function formatRelativeTime(dateString) {
   if (!dateString) {
     return { text: "", type: "invalid" };
@@ -17,7 +45,7 @@ function formatRelativeTime(dateString) {
 
   const past = new Date(dateString);
 
-  if (Number.isNaN(past.getTime())) {
+  if (!isValidDate(past)) {
     return { text: "", type: "invalid" };
   }
 
@@ -25,7 +53,7 @@ function formatRelativeTime(dateString) {
   const diffMs = now.getTime() - past.getTime();
 
   if (diffMs < 0) {
-    return { text: formatDate(past), type: "date" };
+    return { text: formatDate(dateString), type: "date" };
   }
 
   const diffSeconds = Math.floor(diffMs / 1000);
@@ -49,7 +77,7 @@ function formatRelativeTime(dateString) {
     return { text: `${diffDays}일 전`, type: "days" };
   }
 
-  return { text: formatDate(past), type: "date" };
+  return { text: formatDate(dateString), type: "date" };
 }
 
 export function useRelativeTime(dateString) {
