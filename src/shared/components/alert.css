@@ -60,6 +60,7 @@
 
 .button-wrapper .cancel {
   background: var(--gray2);
+  color: var(--mainText);
 }
 
 /* 배경 페이드인 */
