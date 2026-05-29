@@ -6,6 +6,11 @@ import ToggleItem from "../../shared/components/ToggleItem";
 import Loading from "../../shared/components/Loading";
 import { useUser } from "../../contexts/useUser";
 import { useToast } from "../../contexts/ToastContext";
+import {
+  enableWebPush,
+  disableWebPush,
+  getCurrentWebPushRegistrationState,
+} from "../../shared/api/webPushClient";
 import "./setting.css";
 
 const Setting = () => {
@@ -17,6 +22,7 @@ const Setting = () => {
   const [pushEnabled, setPushEnabled] = useState(false);
   const [aiEnabled, setAiEnabled] = useState(true); // 아직 API 명세 없음
   const [disclosureEnabled, setDisclosureEnabled] = useState(true); // 아직 API 명세 없음
+  const [pushBusy, setPushBusy] = useState(false);
 
   useEffect(() => {
     if (!settings) return;
@@ -25,21 +31,44 @@ const Setting = () => {
   }, [settings]);
 
   const handlePushChange = async (nextValue) => {
-    try {
-      setPushEnabled(nextValue);
+    if (pushBusy) return;
+    setPushBusy(true);
 
-      await updateUserSettings({
-        ...settings,
-        pushEnabled: nextValue,
-      });
+    try {
+      if (nextValue) {
+        // Enable: enableWebPush → updateUserSettings(pushEnabled true) → local state
+        await enableWebPush();
+
+        await updateUserSettings({
+          ...settings,
+          pushEnabled: true,
+        });
+
+        setPushEnabled(true);
+      } else {
+        // Disable: disableWebPush → persist false
+        await disableWebPush();
+
+        await updateUserSettings({
+          ...settings,
+          pushEnabled: false,
+        });
+
+        setPushEnabled(false);
+      }
 
       showToast("알림 설정이 변경되었습니다.", "success");
     } catch (e) {
       console.error("푸시 알림 설정 변경 실패:", e);
       showToast("알림 설정 변경에 실패했습니다.", "error");
 
-      // 실패 시 원복
-      setPushEnabled((prev) => !prev);
+      // Sync local state with actual push registration state on failure
+      const actualState = await getCurrentWebPushRegistrationState().catch(
+        () => "default",
+      );
+      setPushEnabled(actualState === "registered");
+    } finally {
+      setPushBusy(false);
     }
   };
 
