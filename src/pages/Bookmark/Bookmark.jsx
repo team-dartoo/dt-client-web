@@ -73,7 +73,6 @@ function SortableBookmarkItem({ company, index, onDelete, onClickCompany }) {
 const Bookmark = () => {
   const navigate = useNavigate();
 
-  // context에서 북마크 목록/삭제/순서변경 가져오기
   const {
     bookmarks,
     removeBookmark,
@@ -82,18 +81,21 @@ const Bookmark = () => {
     error: bookmarkError,
   } = useBookmark();
 
-  // 드래그 순서는 로컬 state로 관리
   const [companies, setCompanies] = useState([]);
+
+  // 순서 변경 저장 중인지
+  const [isReordering, setIsReordering] = useState(false);
 
   const [showAlert, setShowAlert] = useState(false);
   const [targetIndex, setTargetIndex] = useState(null);
 
   // context 북마크 목록이 바뀌면 로컬 리스트 갱신
+  // 단, 드래그 순서 저장 중에는 로컬 optimistic 상태를 유지
   useEffect(() => {
+    if (isReordering) return;
     setCompanies(bookmarks);
-  }, [bookmarks]);
+  }, [bookmarks, isReordering]);
 
-  // 드래그 종료 시 순서 업데이트 (서버에 persist)
   const handleDragEnd = async (event) => {
     const { active, over } = event;
     if (!over) return;
@@ -101,16 +103,24 @@ const Bookmark = () => {
 
     const oldIndex = companies.findIndex((c) => c.corpCode === active.id);
     const newIndex = companies.findIndex((c) => c.corpCode === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const previousCompanies = companies;
     const reordered = arrayMove(companies, oldIndex, newIndex);
 
-    // 로컬 상태를 먼저 업데이트 (optimistic)
+    // 화면 먼저 변경
     setCompanies(reordered);
+    setIsReordering(true);
 
     try {
+      // 서버에는 변경된 순서만 전달
       await reorderBookmarks(reordered.map((c) => c.corpCode));
     } catch {
-      // 순서 변경 실패 시 이전 순서로 복원
-      setCompanies(companies);
+      // 실패 시 이전 순서로 복구
+      setCompanies(previousCompanies);
+    } finally {
+      setIsReordering(false);
     }
   };
 
@@ -121,11 +131,13 @@ const Bookmark = () => {
 
   const handleConfirmDelete = async () => {
     if (targetIndex === null || !companies[targetIndex]) return;
+
     const targetcorpCode = companies[targetIndex].corpCode;
+
     try {
       await removeBookmark(targetcorpCode);
     } catch {
-      // 삭제 실패 시 로컬 리스트 유지 (context가 복원함)
+      // 삭제 실패 시 로컬 리스트 유지
     }
 
     setShowAlert(false);
@@ -147,7 +159,7 @@ const Bookmark = () => {
       <NavBar />
       <Header title="관심 기업" />
 
-      {loading ? (
+      {loading && companies.length === 0 ? (
         <div className="empty-state">불러오는 중...</div>
       ) : bookmarkError ? (
         <div className="empty-state">관심 기업을 불러오지 못했습니다.</div>

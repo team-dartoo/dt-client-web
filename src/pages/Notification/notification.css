@@ -1,3 +1,75 @@
 .Notification {
   padding-bottom: 70px;
 }
+
+/* notificationSkeleton */
+
+.notification-skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 18px 90px;
+}
+
+.notification-skeleton-item {
+  width: 100%;
+  padding: 16px;
+  border-radius: 16px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.notification-skeleton-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.notification-skeleton-badge {
+  width: 64px;
+  height: 22px;
+  border-radius: 999px;
+}
+
+.notification-skeleton-time {
+  width: 48px;
+  height: 14px;
+  border-radius: 999px;
+}
+
+.notification-skeleton-title {
+  width: 78%;
+  height: 18px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.notification-skeleton-subtitle {
+  width: 55%;
+  height: 14px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.notification-skeleton-summary {
+  width: 92%;
+  height: 14px;
+  border-radius: 8px;
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #edf1f5 0%, #f7f9fb 45%, #edf1f5 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}

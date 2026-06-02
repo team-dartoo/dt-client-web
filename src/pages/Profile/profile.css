@@ -73,3 +73,86 @@
   height: 20px;
   aspect-ratio: 1/1;
 }
+
+/** ProfileSkeleton **/
+
+.profile-skeleton-card {
+  background: var(--mainBlueLight);
+}
+
+.profile-skeleton-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.profile-skeleton-texts {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+}
+
+.profile-skeleton-name {
+  width: 130px;
+  height: 24px;
+  border-radius: 8px;
+}
+
+.profile-skeleton-sub {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.profile-skeleton-badge {
+  width: 76px;
+  height: 18px;
+  border-radius: 999px;
+}
+
+.profile-skeleton-link {
+  width: 82px;
+  height: 18px;
+  border-radius: 999px;
+}
+
+.profile-skeleton-ad {
+  height: 100px;
+  margin: 15px 0;
+}
+
+.profile-skeleton-menu-item {
+  pointer-events: none;
+}
+
+.profile-skeleton-chevron {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.profile-skeleton-menu-text {
+  width: 110px;
+  height: 20px;
+  border-radius: 8px;
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #edf1f5 0%, #f7f9fb 45%, #edf1f5 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}

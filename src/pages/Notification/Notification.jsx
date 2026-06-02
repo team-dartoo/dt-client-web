@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import NavBar from "../../shared/components/Navbar";
 import Header from "../../shared/components/Header";
 import NotificationItem from "./component/NotificationItem";
-import Loading from "../../shared/components/Loading";
 
 import { useNotification } from "@/contexts/useNotification";
 import settings from "@/images/settings_icon.svg";
@@ -44,7 +43,7 @@ const Notification = () => {
       />
 
       {loading ? (
-        <Loading />
+        <NotificationSkeleton />
       ) : error ? (
         <div className="empty-state">알림을 불러오지 못했어요.</div>
       ) : notifications.length === 0 ? (
@@ -71,3 +70,22 @@ const Notification = () => {
 };
 
 export default Notification;
+
+const NotificationSkeleton = ({ count = 6 }) => {
+  return (
+    <section className="notification-skeleton-list">
+      {Array.from({ length: count }).map((_, index) => (
+        <div className="notification-skeleton-item" key={index}>
+          <div className="notification-skeleton-top">
+            <div className="notification-skeleton-badge skeleton-shimmer" />
+            <div className="notification-skeleton-time skeleton-shimmer" />
+          </div>
+
+          <div className="notification-skeleton-title skeleton-shimmer" />
+          <div className="notification-skeleton-subtitle skeleton-shimmer" />
+          <div className="notification-skeleton-summary skeleton-shimmer" />
+        </div>
+      ))}
+    </section>
+  );
+};

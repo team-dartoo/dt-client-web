@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import NavBar from "../../shared/components/Navbar";
 import Header from "../../shared/components/Header";
 import profileIcon from "@/images/profile_icon.svg";
@@ -13,7 +13,8 @@ const Profile = () => {
   const { profile, planInfo, loading } = useUser();
   const navigate = useNavigate();
 
-  if (loading || !profile || !planInfo) return null;
+  if (loading || !profile || !planInfo) return <ProfileSkeleton />;
+
   const isPremium = planInfo.plan === "PREMIUM";
 
   return (
@@ -88,3 +89,37 @@ const Profile = () => {
 };
 
 export default Profile;
+
+const ProfileSkeleton = () => {
+  return (
+    <div className="profile page">
+      <NavBar />
+      <Header title="내 정보" />
+
+      <div className="profile-card">
+        <div className="profile-info profile-skeleton-card">
+          <div className="profile-skeleton-icon skeleton-shimmer" />
+
+          <div className="profile-texts profile-skeleton-texts">
+            <div className="profile-skeleton-name skeleton-shimmer" />
+            <div className="profile-skeleton-sub">
+              <div className="profile-skeleton-badge skeleton-shimmer" />
+              <div className="profile-skeleton-link skeleton-shimmer" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="profile-skeleton-ad skeleton-shimmer" />
+
+      <div className="profile-menu">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <div className="menu-item profile-skeleton-menu-item" key={index}>
+            <div className="profile-skeleton-chevron skeleton-shimmer" />
+            <div className="profile-skeleton-menu-text skeleton-shimmer" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
