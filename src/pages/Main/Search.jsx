@@ -38,7 +38,9 @@ const Search = () => {
     if (!trimmed) return;
 
     // URL q 갱신 → 결과 모드
-    navigate(`/main/search?q=${encodeURIComponent(trimmed)}`);
+    navigate(`/main/search?q=${encodeURIComponent(trimmed)}`, {
+      replace: Boolean(q),
+    });
     setIsFocused(false);
   };
 
@@ -46,7 +48,7 @@ const Search = () => {
   const handleClear = () => {
     setKeyword("");
     // URL에서도 q 제거
-    navigate("/main/search");
+    navigate("/main/search", { replace: true });
     // 다시 HOME 모드 + 포커스 상태
     setIsFocused(true);
   };
@@ -59,7 +61,9 @@ const Search = () => {
     // 검색바에 값 세팅
     setKeyword(trimmed);
     // URL q 갱신
-    navigate(`/main/search?q=${encodeURIComponent(trimmed)}`);
+    navigate(`/main/search?q=${encodeURIComponent(trimmed)}`, {
+      replace: Boolean(q),
+    });
     setIsFocused(false);
   };
 

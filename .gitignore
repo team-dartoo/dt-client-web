@@ -25,3 +25,6 @@ dist-ssr
 
 .vercel
 .env
+
+node_modules/
+node_modules_backup/

@@ -16,15 +16,16 @@ export default function Navbar() {
 
   return (
     <nav className="Navbar" aria-label="Bottom Navigation">
-      <NavLink to="/main" className={linkCls} aria-label="Main">
+      <NavLink replace to="/main" className={linkCls} aria-label="Main">
         <img src={homeIcon} alt="" />
       </NavLink>
 
-      <NavLink to="/bookmark" className={linkCls} aria-label="Bookmark">
+      <NavLink replace to="/bookmark" className={linkCls} aria-label="Bookmark">
         <img src={bookmarkIcon} alt="" />
       </NavLink>
 
       <NavLink
+        replace
         to="/notification"
         className={linkCls}
         aria-label="Notifications"
@@ -35,7 +36,7 @@ export default function Navbar() {
         </span>
       </NavLink>
 
-      <NavLink to="/profile" className={linkCls} aria-label="Profile">
+      <NavLink replace to="/profile" className={linkCls} aria-label="Profile">
         <img src={userIcon} alt="" />
       </NavLink>
     </nav>

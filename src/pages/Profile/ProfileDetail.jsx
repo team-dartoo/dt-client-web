@@ -63,7 +63,7 @@ const ProfileDetail = () => {
     try {
       await logout();
       setShowAlert(false);
-      navigate("/login");
+      navigate("/login", { replace: true });
     } catch (err) {
       console.error("로그아웃 실패:", err);
       setShowAlert(false);

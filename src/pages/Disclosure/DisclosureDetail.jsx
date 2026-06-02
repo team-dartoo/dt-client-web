@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { replace, useNavigate, useParams } from "react-router-dom";
 import Loading from "../../shared/components/Loading";
 import Header from "../../shared/components/Header";
 import xIcon from "@/images/x_white_icon.svg";
@@ -256,7 +256,7 @@ function DisclosureDetailContent({
             type="button"
             onClick={() => {
               if (!corpCode) return;
-              navigate(`/company/${corpCode}`);
+              navigate(`/company/${corpCode}`, { replace: true });
             }}
           >
             <h2>{companyName}</h2>
