@@ -1,4 +1,4 @@
-import { getToken, deleteToken, onMessage } from "firebase/messaging";
+import { getToken, deleteToken, onMessage, isSupported } from "firebase/messaging";
 import { getFirebaseMessaging, getVapidKey } from "./pushConfig";
 import { getServiceBaseUrl } from "./serviceConfig";
 import { getOrCreateDeviceId } from "./authApi";
@@ -9,6 +9,15 @@ const USER_SERVICE_BASE = getServiceBaseUrl(
 );
 
 const WEB_TOKEN_ENDPOINT = `${USER_SERVICE_BASE}/api/users/notifications/push/tokens`;
+
+/**
+ * Register the Firebase messaging service worker and return the registration.
+ * Returns undefined when service workers are not supported.
+ */
+const getSWRegistration = async () => {
+  if (!("serviceWorker" in navigator)) return undefined;
+  return navigator.serviceWorker.register("/firebase-messaging-sw.js");
+};
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("accessToken");
@@ -73,19 +82,20 @@ const ensureForegroundListener = async () => {
     const body = notification?.body || "";
 
     if (Notification.permission === "granted") {
-      navigator.serviceWorker?.getRegistration("/firebase-cloud-messaging-push-scope").then((reg) => {
-        const registration = reg || navigator.serviceWorker;
-        if (registration) {
-          registration.showNotification(title, {
-            body,
-            icon: "/dartoo_logo.svg",
-            data: {
-              click_path: data?.click_path || "/",
-              ...data,
-            },
-          });
-        }
+      const n = new Notification(title, {
+        body,
+        icon: "/dartoo_logo.svg",
+        data: {
+          click_path: data?.click_path || "/",
+          ...data,
+        },
       });
+      n.onclick = () => {
+        const url = new URL(data?.click_path || "/", window.location.origin).href;
+        window.focus();
+        window.location.href = url;
+        n.close();
+      };
     }
   });
 };
@@ -102,8 +112,9 @@ export const enableWebPush = async () => {
 
   const messaging = await getFirebaseMessaging();
   const vapidKey = getVapidKey();
+  const swRegistration = await getSWRegistration();
 
-  const currentToken = await getToken(messaging, { vapidKey });
+  const currentToken = await getToken(messaging, { vapidKey, serviceWorkerRegistration: swRegistration });
   if (!currentToken) {
     throw new Error("Failed to obtain FCM token.");
   }
@@ -118,9 +129,13 @@ export const enableWebPush = async () => {
  * Best-effort — errors are caught and logged, not thrown.
  */
 export const disableWebPush = async () => {
+  const supported = await isSupported();
+  if (!supported) return;
+
   try {
     const messaging = await getFirebaseMessaging();
-    const currentToken = await getToken(messaging, { vapidKey: getVapidKey() });
+    const swRegistration = await getSWRegistration();
+    const currentToken = await getToken(messaging, { vapidKey: getVapidKey(), serviceWorkerRegistration: swRegistration });
 
     if (currentToken) {
       try {
@@ -162,8 +177,10 @@ export const getCurrentWebPushRegistrationState = async () => {
 
   try {
     const messaging = await getFirebaseMessaging();
+    const swRegistration = await getSWRegistration();
     const currentToken = await getToken(messaging, {
       vapidKey: getVapidKey(),
+      serviceWorkerRegistration: swRegistration,
     });
     return currentToken ? "registered" : "default";
   } catch {
