@@ -224,9 +224,7 @@ function DisclosureDetailContent({
       return;
     }
 
-    // TODO: 실제 챗봇 라우트에 맞춰 수정
-    navigate("/chatbot");
-    // 또는 navigate(`/chatbot?disclosureId=${disclosure.disclosureId}`);
+    navigate(`/chatbot?disclosureId=${disclosure.disclosureId}`);
   };
 
   return (
