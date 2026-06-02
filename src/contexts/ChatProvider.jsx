@@ -74,11 +74,11 @@ export const ChatProvider = ({ children }) => {
     [runWithRefreshRetry],
   );
 
-  const createConversation = useCallback(async () => {
+  const createConversation = useCallback(async (options = {}) => {
     setLoading(true);
     setError(null);
     try {
-      const conv = await runWithRefreshRetry(() => chatApi.createConversation());
+      const conv = await runWithRefreshRetry(() => chatApi.createConversation(options));
       setActiveId(conv.id);
       setTitle(conv.title || "새 대화");
       setMessages([]);
