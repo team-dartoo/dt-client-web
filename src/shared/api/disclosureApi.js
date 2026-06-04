@@ -416,7 +416,7 @@ function buildCompanyMapFromDisclosures() {
         stockCode,
         corpCls,
         disclosureCount: 0,
-        latestDisclosureDate: item.receptionDate,
+        latestDisclosureDate: item.createdAt || item.updatedAt || item.receptionDate,
         tags: new Set(),
         disclosures: [],
       });
@@ -426,11 +426,12 @@ function buildCompanyMapFromDisclosures() {
 
     company.disclosureCount += 1;
 
+    const candidateDate = item.createdAt || item.updatedAt || item.receptionDate;
     if (
-      new Date(item.receptionDate).getTime() >
+      new Date(candidateDate).getTime() >
       new Date(company.latestDisclosureDate).getTime()
     ) {
-      company.latestDisclosureDate = item.receptionDate;
+      company.latestDisclosureDate = candidateDate;
     }
 
     (item.tags || []).forEach((tag) => company.tags.add(tag));
@@ -487,10 +488,10 @@ function buildCompanyDetailList() {
       disclosureCount: company.disclosureCount,
       latestDisclosureDate: company.latestDisclosureDate,
       tags: Array.from(company.tags),
-      disclosures: {
+        disclosures: {
         items: company.disclosures.sort(
           (a, b) =>
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+            new Date(b.createdAt || b.updatedAt).getTime() - new Date(a.createdAt || a.updatedAt).getTime(),
         ),
       },
     }))
