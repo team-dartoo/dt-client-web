@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useChat } from "../../contexts/useChat";
 import Header from "../../shared/components/Header";
 import xIcon from "../../images/x_icon.svg";
@@ -7,6 +7,8 @@ import "./chatbot.css";
 
 const Chatbot = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const disclosureId = searchParams.get("disclosureId");
   const {
     conversations,
     messages,
@@ -26,10 +28,20 @@ const Chatbot = () => {
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const disclosureAutoCreated = useRef(false);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    if (!disclosureId || disclosureAutoCreated.current) return;
+    disclosureAutoCreated.current = true;
+    setView("chat");
+    createConversation({ disclosureId }).catch(() => {
+      /* provider sets error state */
+    });
+  }, [disclosureId, createConversation]);
 
   const handleCreate = useCallback(async () => {
     try {
@@ -153,13 +165,15 @@ const Chatbot = () => {
                 <img src={xIcon} alt="back" />
               </button>
             }
-            title={title || "대화"}
+            title={title || (disclosureId ? "공시 Q&A" : "대화")}
           />
 
           <section className="chatbot-messages">
             {messages.length === 0 && (
               <div className="chatbot-messages-empty text-sm subtext">
-                메시지를 보내 대화를 시작하세요.
+                {disclosureId
+                  ? "이 공시에 대해 궁금한 점을 물어보세요."
+                  : "메시지를 보내 대화를 시작하세요."}
               </div>
             )}
             {messages.map((msg, idx) => (

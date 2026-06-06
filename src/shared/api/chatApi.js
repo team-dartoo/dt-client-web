@@ -32,9 +32,14 @@ export const chatApi = {
     return data.conversations || [];
   },
 
-  async createConversation(title = null) {
+  async createConversation(options = {}) {
+    if (typeof options === "string") {
+      options = { title: options };
+    }
+    const { title, disclosureId } = options;
     const body = {};
     if (title) body.title = title;
+    if (disclosureId) body.disclosure_id = disclosureId;
     const res = await fetch(`${CHAT_BASE}/conversations`, {
       method: "POST",
       headers: headers(),

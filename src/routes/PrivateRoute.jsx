@@ -4,11 +4,11 @@ import { useAuth } from "../contexts/useAuth";
 import Loading from "../shared/components/Loading";
 
 const PrivateRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, initializing } = useAuth();
   const location = useLocation();
 
   // 앱 시작 시 restoreAuth 중이면 잠깐 로딩
-  if (loading) {
+  if (loading || initializing) {
     return <Loading />;
   }
 
