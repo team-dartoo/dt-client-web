@@ -178,7 +178,7 @@ const CompanyDetail = () => {
         <div className="company-right">
           <h1 className="text-xl">공시 {company.disclosureCount}건</h1>
           <p className="text-sm">
-            최근 공시일 {company.latestDisclosureDate.slice(0, 10)}
+            최근 공시일 {company.latestDisclosureDate ? company.latestDisclosureDate.slice(0, 10) : "-"}
           </p>
         </div>
       </section>
@@ -223,7 +223,7 @@ const CompanyDetail = () => {
                   companyCode={company.stockCode}
                   disclosureId={disclosure._id}
                   title={disclosure.reportName}
-                  dateTime={disclosure.updatedAt || disclosure.receptionDate}
+                  dateTime={disclosure.createdAt || disclosure.updatedAt || disclosure.receptionDate}
                   isNew={Boolean(disclosure.remark)}
                   sentimentTag={disclosure.summary?.sentimentTag}
                   summaryStatus="success"

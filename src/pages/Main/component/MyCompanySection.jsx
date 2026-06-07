@@ -98,7 +98,15 @@ const MyCompanySection = ({ defaultExpanded = false }) => {
           if (!alive) return;
 
           const merged = results.flat();
-          setDisclosures(dedupeDisclosures(merged));
+          const deduped = dedupeDisclosures(merged);
+          deduped.sort((a, b) => {
+            const aDate = a.createdAt || a.updatedAt || a.receptionDate;
+            const bDate = b.createdAt || b.updatedAt || b.receptionDate;
+            const aTime = aDate ? new Date(aDate).getTime() : 0;
+            const bTime = bDate ? new Date(bDate).getTime() : 0;
+            return bTime - aTime;
+          });
+          setDisclosures(deduped);
           return;
         }
 
@@ -186,7 +194,7 @@ const MyCompanySection = ({ defaultExpanded = false }) => {
               companyCode={item.company.stockCode}
               disclosureId={item._id}
               title={item.reportName}
-              dateTime={item.updatedAt || item.receptionDate}
+              dateTime={item.createdAt || item.updatedAt || item.receptionDate}
               isNew={Boolean(item.remark)}
               sentimentTag={item.summary?.sentimentTag}
               summaryStatus="success"
