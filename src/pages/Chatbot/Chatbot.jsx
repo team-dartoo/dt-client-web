@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useChat } from "../../contexts/useChat";
 import Header from "../../shared/components/Header";
+import MarkdownMessage from "./MarkdownMessage";
 import xIcon from "../../images/x_icon.svg";
 import "./chatbot.css";
 
@@ -92,15 +93,6 @@ const Chatbot = () => {
     return `${(d.getMonth() + 1).toString().padStart(2, "0")}.${d.getDate().toString().padStart(2, "0")}`;
   };
 
-  const renderMessageContent = (content) => {
-    if (typeof content === "string") return content;
-    try {
-      return JSON.stringify(content, null, 2);
-    } catch {
-      return String(content);
-    }
-  };
-
   const getBubbleRole = (type) => {
     if (type === "user" || type === "human") return "user";
     return "assistant";
@@ -182,7 +174,7 @@ const Chatbot = () => {
                 className={`chatbot-bubble chatbot-bubble--${getBubbleRole(msg.type)}`}
               >
                 <div className="chatbot-bubble-content text-sm">
-                  {renderMessageContent(msg.content)}
+                  <MarkdownMessage content={msg.content} />
                 </div>
               </div>
             ))}

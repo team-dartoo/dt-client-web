@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../shared/components/Header";
+import MarkdownMessage from "./MarkdownMessage";
 import xIcon from "../../images/x_icon.svg";
 import "./chatbot.css";
 
@@ -198,7 +199,7 @@ const ChatbotTest = () => {
                 )}`}
               >
                 <div className="chatbot-bubble-content text-sm">
-                  {msg.content}
+                  <MarkdownMessage content={msg.content} />
                 </div>
               </div>
             ))}
