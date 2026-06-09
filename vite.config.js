@@ -4,6 +4,8 @@ import { resolve } from "node:path";
 import { mkdirSync, writeFileSync } from "node:fs";
 import process from "node:process";
 
+import { cloudflare } from "@cloudflare/vite-plugin";
+
 const firebaseEnvKeys = [
   "VITE_FIREBASE_API_KEY",
   "VITE_FIREBASE_AUTH_DOMAIN",
@@ -69,7 +71,7 @@ self.addEventListener("notificationclick", (event) => {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "VITE_");
   return {
-    plugins: [react(), firebaseMessagingServiceWorker(env)],
+    plugins: [react(), firebaseMessagingServiceWorker(env), cloudflare()],
     resolve: {
       alias: {
         "@": "/src",
