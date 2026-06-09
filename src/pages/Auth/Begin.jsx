@@ -34,7 +34,8 @@ const Begin = () => {
         >
           이메일 로그인
         </button>
-        <div className="social-login-wrapper">
+        {/* 소셜 로그인 비활성화 */}
+        {/* <div className="social-login-wrapper">
           <button
             className="loginBtnCircle kakao"
             onClick={() => startOAuthLogin("kakao")}
@@ -54,7 +55,7 @@ const Begin = () => {
           >
             <img src={naver} alt="naver_icon" />
           </button>
-        </div>
+        </div> */}
         <Link
           className="btn loginBtn signupBtn primary-dark"
           to="/signup/agree"
